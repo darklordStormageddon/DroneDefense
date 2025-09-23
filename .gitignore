@@ -74,3 +74,6 @@ Plugins/**/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 /Content/Imports/
+
+#ignore umap files in ysh
+/Content/Collaborators/PS_YSH/*.umap
