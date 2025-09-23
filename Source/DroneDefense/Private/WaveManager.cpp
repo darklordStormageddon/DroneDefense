@@ -14,8 +14,6 @@ void AWaveManager::BeginPlay()
 
     srand((unsigned int)time(NULL));
 
-    CurrentWave = 0;// Wave 초기화
-
     WaveStart();
 }
 
@@ -57,10 +55,15 @@ void AWaveManager::SpawnMonster()
             {
                 if (MonsterClassInWave.IsValidIndex(index))
                 {
+                    FActorSpawnParameters SpawnParams;
+                    // 충돌 무시하고 무조건 스폰되도록 설정
+                    SpawnParams.SpawnCollisionHandlingOverride =
+                        ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
                     FVector SpawnLoc = SpawnPosition();
                     FRotator SpawnRot = FRotator::ZeroRotator;
 
-                    AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot);
+                    AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
                     if (Enemy)
                     {
                         Enemy->InitializeEnemy(this);
@@ -205,12 +208,14 @@ void AWaveManager::SpawnMonsterValueInWave()
             if (DecideVal <= 0) continue;
 
             bAnyPossibleThisPass = true;
-                
-            
-            if (SpawnMaxCount(Keys[i]) <= MonsterClassCheckInWave[Keys[i]]) continue;
+            FString Class = Keys[i]->GetName();
 
             // 0 ~ DecideVal 사이의 랜덤값을 뽑기 (0도 포함)
             int RandomVal = rand() % (DecideVal + 1);
+
+            int checkNum = RandomVal + MonsterClassCheckInWave[Keys[i]];
+            //UE_LOG(LogTemp, Warning, TEXT("%s, %d"), *Class, MonsterClassCheckInWave[Keys[i]]);
+            if (SpawnMaxCount(Keys[i]) < checkNum) continue;
 
             // 그렇게 몬스터 소환할 개수, 랜덤한 숫자 뽑 MonsterClassInWave에 넣는다
             for (int j = 0; j < RandomVal; ++j)
@@ -235,6 +240,7 @@ void AWaveManager::SpawnMonsterValueInWave()
 int AWaveManager::SpawnMaxCount(TSubclassOf<AActor> MaxValueClass)
 {
     int Max = WaveValue / MonsterClassValues[MaxValueClass] / 2;
+    //UE_LOG(LogTemp, Warning, TEXT("%d"), Max);
     return Max;
 }
 // Fisher-Yates 알고리즘으로 랜덤하게 섞기

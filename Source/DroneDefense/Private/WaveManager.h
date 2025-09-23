@@ -12,8 +12,7 @@ class AWaveManager : public AActor
     AWaveManager();
 
 private:
-    int CurrentWave;
-    int MaxWaves = 5;
+    int CurrentWave = StartWave;
 
 protected:
     virtual void BeginPlay() override;
@@ -96,4 +95,11 @@ private:
 public:
     void MonsterDeath();
 
+    int getCurrentWave;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
+    int StartWave;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
+    int MaxWave;
 };
