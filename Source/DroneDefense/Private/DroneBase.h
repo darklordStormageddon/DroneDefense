@@ -43,14 +43,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Trace")
 	float _droneHeight = 100.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Trace", meta = (UIMin = "0.0001", UIMax = "0.01"))
+	float _nonRotateSpeed = 0.01f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Trace", meta = (UIMin = "0.01", UIMax = "5"))
 	float _minRotateSpeed = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Trace", meta = (UIMin = "5", UIMax = "20"))
 	float _maxRotateSpeed = 10.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Trace", meta = (UIMin = "0.0", UIMax = "1.0"))
-	float _rotateSpeedLerpRate = 0.5f;
 
 	float _currentRotateSpeed = 0.0f;
 
