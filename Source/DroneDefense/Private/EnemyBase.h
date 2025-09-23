@@ -7,6 +7,9 @@
 #include "TimerManager.h" // FTimerHandle
 #include "EnemyBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGotClose);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGotHit);
+
 // 전방 선언
 class AWaveManager;
 
@@ -67,9 +70,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
 	void DestroySelf();
 
+	UPROPERTY(BlueprintAssignable, Category = "Monster|Events")
+	FGotClose GotClose;
+
+	UPROPERTY(BlueprintAssignable, Category = "Monster|Events")
+	FGotHit GotHit;
+
+	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
+	void ToggleClose();
+
 private:
 	FTimerHandle DestroyTimerHandle;
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
 	void TakeDamage(float Damage);
 };
