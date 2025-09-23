@@ -47,6 +47,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Stats")
 	int Speed;
 
+
 	// 몬스터 Value
 	UPROPERTY(BlueprintReadOnly, Category = "Monster|Stats")
 	int Monster_Value;
@@ -60,6 +61,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events")
 	bool Hit;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events")
+	bool Dead;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events", meta = (ExposeOnSpawn = true))
 	AActor* Nexus;
