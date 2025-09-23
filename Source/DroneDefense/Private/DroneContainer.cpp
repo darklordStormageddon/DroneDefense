@@ -26,14 +26,7 @@ void ADroneContainer::Tick(float DeltaTime)
 
 	_droneCore->AddWorldRotation(FRotator(0.0f, -_coreRotationSpeed * DeltaTime, 0.0f));
 	
-	if (_followPosition)
-	{
-		FVector _nextLocation = FMath::Lerp(GetActorLocation(), _followPosition->GetComponentLocation(), _followCenterRate);
-		SetActorLocation(_nextLocation);
-
-		FRotator _nextRotation = FMath::Lerp(GetActorRotation(), _followPosition->GetComponentRotation(), _followCenterRate);
-		SetActorRotation(_nextRotation);
-	}
+	UpdateCenterPosition();
 
 	// Orbital Rotation
 	_standardAngle += _rotationSpeed * DeltaTime;
@@ -53,11 +46,14 @@ void ADroneContainer::Tick(float DeltaTime)
 	}
 }
 
-void ADroneContainer::OperateDroneContainer(UStaticMeshComponent* FollowPosition)
+void ADroneContainer::OperateDroneContainer(TArray<FOrbitalCenterData> OrbitalCenterDataArray)
 {
-	_followPosition = FollowPosition;
+	for (FOrbitalCenterData& _orbitalCenterData : OrbitalCenterDataArray)
+	{
+		_orbitalCenterDataMap.Add((int32)_orbitalCenterData.droneState, _orbitalCenterData);
+	}
 
-	_droneMode = -1;
+	_currentDroneMode = -1;
 	ChangeDroneMode();
 }
 
@@ -73,7 +69,7 @@ void ADroneContainer::GenerateDrone()
 		if (_newDrone)
 		{
 			_newDrone->InitializeDrone(this);
-			_newDrone->ChangeTraceMode(_droneMode == (int32)E_DroneState_Type::Tracing);
+			_newDrone->ChangeTraceMode(_currentDroneMode == (int32)E_DroneState_Type::Tracing);
 			
 			int32 _nextIndex = _droneMap.Num();
 			_droneMap.Add(_nextIndex, _newDrone);
@@ -83,19 +79,30 @@ void ADroneContainer::GenerateDrone()
 
 void ADroneContainer::ChangeDroneMode()
 {
-	_droneMode++;
-	_droneMode %= (int32)E_DroneState_Type::SIZE;
+	_currentDroneMode++;
+	_currentDroneMode %= (int32)E_DroneState_Type::SIZE;
+
+	// Change Orbital Center Data
+	if (_currentDroneMode != (int32)E_DroneState_Type::Tracing)
+	{
+		FOrbitalCenterData _orbitalCenterData = _orbitalCenterDataMap.FindRef(_currentDroneMode);
+		_targetOrbitalCenter = _orbitalCenterData.orbitalCenter;
+		_followCenterSpeed = _orbitalCenterData.followCenterSpeed;
+		_rotationSpeed = _orbitalCenterData.rotationSpeed;
+		_rotationRadius = _orbitalCenterData.rotationRadius;
+		UpdateOrbitalPositions();
+	}
 
 	for (int32 i = 0; i < _droneMap.Num(); i++)
 	{
 		if (ADroneBase* _drone = _droneMap.FindRef(i))
 		{
-			_drone->ChangeTraceMode(_droneMode == (int32)E_DroneState_Type::Tracing);
+			_drone->ChangeTraceMode(_currentDroneMode == (int32)E_DroneState_Type::Tracing);
 		}
 	}
 
 	const TCHAR* _droneModeName = TEXT("Unknown");
-	switch ((E_DroneState_Type)_droneMode)
+	switch ((E_DroneState_Type)_currentDroneMode)
 	{
 	case E_DroneState_Type::Standard:
 		_droneModeName = TEXT("Standard");
@@ -118,8 +125,34 @@ void ADroneContainer::InitializeDroneContainer(UStaticMeshComponent* DroneCore, 
 {
 	_droneCore = DroneCore;
 	_orbitalCenter = OrbitalCenter;
+}
 
-	_droneOrbitalArray.Empty();
+void ADroneContainer::UpdateCenterPosition()
+{
+	if (!_droneCore || !_targetOrbitalCenter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UpdateCenterPosition: _droneCore or _targetOrbitalCenter is null"));
+		return;
+	}
+
+	float _lerpRate = GetWorld()->GetDeltaSeconds() * _followCenterSpeed;
+
+	// 위치
+	FVector _nextLocation = FMath::Lerp(GetActorLocation(), _targetOrbitalCenter->GetComponentLocation(), _lerpRate);
+	SetActorLocation(_nextLocation);
+
+	// 회전
+	FRotator _nextRotator = _targetOrbitalCenter->GetComponentRotation();
+	if (_currentDroneMode == (int32)E_DroneState_Type::Horizontal)
+	{
+		FVector _forwardVector = _targetOrbitalCenter->GetForwardVector();
+		FVector _upVector = FVector::UpVector;
+		FMatrix _rotationMatrix = FRotationMatrix::MakeFromXZ(_forwardVector, _upVector);
+		_nextRotator = _rotationMatrix.Rotator();
+	}
+
+	FRotator _nextRotation = FMath::Lerp(GetActorRotation(), _nextRotator, _lerpRate);
+	SetActorRotation(_nextRotation);
 }
 
 void ADroneContainer::AddOrbitalPoint(FVector& Location)
@@ -149,11 +182,11 @@ void ADroneContainer::AddOrbitalPoint(FVector& Location)
 	}
 	
 	_droneOrbitalArray.Add(_newDroneComp);
-	UpdateOrbitalPointsPositions();
+	UpdateOrbitalPositions();
 	Location = _newDroneComp->GetComponentLocation();
 }
 
-void ADroneContainer::UpdateOrbitalPointsPositions()
+void ADroneContainer::UpdateOrbitalPositions()
 {
 	// 현재 궤도 드론의 개수
 	int32 _droneCount = _droneOrbitalArray.Num();

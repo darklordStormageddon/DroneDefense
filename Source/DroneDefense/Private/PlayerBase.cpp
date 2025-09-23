@@ -32,7 +32,7 @@ void APlayerBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
-void APlayerBase::GenerateDroneContainer(UStaticMeshComponent* FollowPosition)
+void APlayerBase::GenerateDroneContainer()
 {
 	if (!DroneContainerClass)
 	{
@@ -40,8 +40,25 @@ void APlayerBase::GenerateDroneContainer(UStaticMeshComponent* FollowPosition)
 		return;
 	}
 
+	// 드론 컨테이너 생성
 	_droneContainer = GetWorld()->SpawnActor<ADroneContainer>(DroneContainerClass);
-	_droneContainer->OperateDroneContainer(FollowPosition);
+	
+	// 소켓 이름으로 컴포넌트를 찾아서 orbitalCenter에 할당
+	for (int32 i = 0; i < _orbitalCenterDataArray.Num(); i++)
+	{
+		if (_orbitalCenterDataArray[i].socketName != NAME_None)
+		{
+			UStaticMeshComponent* _foundComponent = FindComponentBySocketName(_orbitalCenterDataArray[i].socketName);
+			if (_foundComponent)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Found component: %s, %f"), *_foundComponent->GetName(), _orbitalCenterDataArray[i].followCenterSpeed);
+				_orbitalCenterDataArray[i].orbitalCenter = _foundComponent;
+			}	
+		}
+	}
+	
+	// 오비털 센터 데이터 설정
+	_droneContainer->OperateDroneContainer(_orbitalCenterDataArray);
 }
 
 void APlayerBase::GenerateDroneInput()
@@ -52,4 +69,21 @@ void APlayerBase::GenerateDroneInput()
 void APlayerBase::ChangeDroneModeInput()
 {
 	_droneContainer->ChangeDroneMode();
+}
+
+UStaticMeshComponent* APlayerBase::FindComponentBySocketName(const FName& SocketName)
+{
+	TArray<UActorComponent*> _components;
+	GetComponents(_components);
+	
+	for (UActorComponent* _component : _components)
+	{
+		UStaticMeshComponent* _staticMeshComponent = Cast<UStaticMeshComponent>(_component);
+		if (_staticMeshComponent && _staticMeshComponent->GetName() == SocketName.ToString())
+		{
+			return _staticMeshComponent;
+		}
+	}
+	
+	return nullptr;
 }
