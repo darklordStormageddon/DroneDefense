@@ -73,7 +73,14 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+#ignore imports
 /Content/Imports/
 
 #ignore umap files in ysh
 /Content/Collaborators/PS_YSH/*.umap
+
+#ignore paragon
+/Content/ParagonRampage
+
+/Content/ParagonMinions
