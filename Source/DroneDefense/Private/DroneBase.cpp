@@ -114,15 +114,9 @@ bool ADroneBase::TryTracing()
 		return false;
 	}
 
-	// 전진
 	FVector _currentPosition = GetActorLocation();
-	FVector _forward = GetActorForwardVector();
-	float _deltaTime = GetWorld()->GetDeltaSeconds();
-	SetActorLocation(_currentPosition + _forward * _moveSpeed * _deltaTime);
-	
 	FVector _targetPos = _target->GetActorLocation() + FVector(0, 0, _droneHeight);
-	FVector _toTarget = _targetPos - _currentPosition;
-	float _currentSqrDistance = _toTarget.SquaredLength();
+	float _currentSqrDistance = (_targetPos - _currentPosition).SquaredLength();
 
 	// 목표 회전 속도 계산
 	float _aimRotateSpeed;
@@ -140,39 +134,58 @@ bool ADroneBase::TryTracing()
 		_aimRotateSpeed = _minRotateSpeed;
 	}
 
-	// c++ 내적 메서드 사용
-	float _lerpRate = FVector::DotProduct(_forward, _toTarget.GetSafeNormal());
-	_lerpRate = FMath::Clamp(_lerpRate, 0.01f, 1.0f);
-	_currentRotateSpeed = FMath::Lerp(_currentRotateSpeed, _aimRotateSpeed, _lerpRate);
+	Tracing(_targetPos, _aimRotateSpeed);
 
-	// 현재 회전값과 목표 회전값 사이를 부드럽게 보간 (회전 속도 적용)
-	FRotator _newRotation = FMath::RInterpTo(GetActorRotation(), _toTarget.GetSafeNormal().Rotation(), _deltaTime, _currentRotateSpeed);
+	if (_isDebugDraw)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::White,
+			FString::Printf(TEXT("Rotation Speed: %.2f"), _currentRotateSpeed));
 
-	// 회전 적용
-	SetActorRotation(_newRotation);
-	
-	// 디버그 정보
-	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::White, 
-		FString::Printf(TEXT("Rotation Speed: %.2f"), _currentRotateSpeed));
-		
-	DrawDebugLine(GetWorld(), _currentPosition, _targetPos, FColor::Green, false, 0.1f, 0, 1.0f);
+		DrawDebugLine(GetWorld(), _currentPosition, _targetPos, FColor::Green, false, 0.1f, 0, 1.0f);
 
-	DrawDebugSphere(GetWorld(), _targetPos, _minDistance, 16, FColor::Yellow, false, _deltaTime * 1.1f);
-	DrawDebugSphere(GetWorld(), _targetPos, _maxDistance, 16, FColor::Yellow, false, _deltaTime * 1.1f);
+		float _deltaTime = GetWorld()->GetDeltaSeconds();
+		DrawDebugSphere(GetWorld(), _targetPos, _minDistance, 16, FColor::Yellow, false, _deltaTime * 1.1f);
+		DrawDebugSphere(GetWorld(), _targetPos, _maxDistance, 16, FColor::Yellow, false, _deltaTime * 1.1f);
+	}
 
 	return true;
 }
 
+void ADroneBase::Tracing(FVector TargetLocation, float TargetRotationSpeed)
+{
+	FVector _currentPosition = GetActorLocation();
+	FVector _forward = GetActorForwardVector();
+	float _deltaTime = GetWorld()->GetDeltaSeconds();
+
+	// 목표 방향
+	FVector _toTarget = (TargetLocation - _currentPosition).GetSafeNormal();
+
+	// 내적 값 기반 회전 속도 변경률
+	float _lerpRate = FVector::DotProduct(_forward, _toTarget);
+	_lerpRate = FMath::Clamp(_lerpRate, 0.01f, 1.0f);
+	_currentRotateSpeed = FMath::Lerp(_currentRotateSpeed, TargetRotationSpeed, _lerpRate);
+
+	// 회전
+	FRotator _newRotation = FMath::RInterpTo(GetActorRotation(), _toTarget.Rotation(), _deltaTime, _currentRotateSpeed);
+	SetActorRotation(_newRotation);
+
+	// 전진
+	SetActorLocation(_currentPosition + _forward * _moveSpeed * _deltaTime);
+	
+}
+
 void ADroneBase::RotateOrbital(float DeltaTime)
 {
-	DrawDebugSphere(GetWorld(), _targetLocation, _arriveRange, 16, FColor::Yellow, false, DeltaTime * 2.0f);
+	if (_isDebugDraw)
+	{
+		DrawDebugSphere(GetWorld(), _targetLocation, _arriveRange, 16, FColor::Yellow, false, DeltaTime * 2.0f);
+	}
 
 	FVector _currentLocation = GetActorLocation();
-	FVector _toTargetDir = _targetLocation - _currentLocation;
-	FRotator _toTargetRot = _toTargetDir.Rotation();
+	float _sqrToTargetDistance = (_targetLocation - _currentLocation).SquaredLength();
 
 	// 목표 위치에 도달했는지 확인
-	if (_toTargetDir.SquaredLength() <= _sqrArriveRange)
+	if (_sqrToTargetDistance <= _sqrArriveRange)
 	{
 		SetActorLocation(_targetLocation);
 
@@ -185,9 +198,7 @@ void ADroneBase::RotateOrbital(float DeltaTime)
 		return;
 	}
 
-	// 목표를 향해 이동 및 회전
-	SetActorLocation(_currentLocation + _toTargetDir.GetSafeNormal() * _moveSpeed * DeltaTime);
-	SetActorRotation(_toTargetRot);
+	Tracing(_targetLocation, _minRotateSpeed);
 }
 
 void ADroneBase::Attack(float DeltaTime)
@@ -195,7 +206,10 @@ void ADroneBase::Attack(float DeltaTime)
 	if (_leftAttackDelay > 0.0f)
 		return;
 	
-	DrawDebugSphere(GetWorld(), GetActorLocation(), _attackTracingRange, 16, FColor::Red, false, DeltaTime * 1.01f);
+	if (_isDebugDraw)
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), _attackTracingRange, 16, FColor::Red, false, DeltaTime * 1.01f);
+	}
 	
 	if (_isTraceMode)
 	{

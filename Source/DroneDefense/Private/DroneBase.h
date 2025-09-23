@@ -17,6 +17,9 @@ public:
 	ADroneBase();
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Debug")
+	bool _isDebugDraw = false;
+
 	class ADroneContainer* _droneContainer = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Move")
@@ -97,6 +100,8 @@ protected:
 	void SearchTarget();
 
 	bool TryTracing();
+
+	void Tracing(FVector TargetLocation, float TargetRotationSpeed);
 
 	void RotateOrbital(float DeltaTime);
 
