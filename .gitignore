@@ -81,6 +81,6 @@ DerivedDataCache/*
 /Content/Collaborators/PS_YSH/*.umap
 
 #ignore paragon
-/Content/ParagonRampage
+/Content/ParagonRampage/
 
-/Content/ParagonMinions
+/Content/ParagonMinions/
