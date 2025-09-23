@@ -122,38 +122,43 @@ bool ADroneBase::TryTracing()
 	
 	FVector _targetPos = _target->GetActorLocation() + FVector(0, 0, _droneHeight);
 	FVector _toTarget = _targetPos - _currentPosition;
-	FVector _toTargetZeroZ = FVector(_toTarget.X, _toTarget.Y, 0);
-	float _currentSqrDistance = _toTargetZeroZ.SquaredLength();
+	float _currentSqrDistance = _toTarget.SquaredLength();
 
 	// 목표 회전 속도 계산
 	float _aimRotateSpeed;
-	if (_isTraceMode && _currentSqrDistance <= _sqrMinDistance)
+	if (_currentSqrDistance <= _sqrMinDistance)
 	{
-		// _minDistance 범위 안에 있으면 회전 속도의 목표를 0으로 설정
-		_aimRotateSpeed = 0.0f;
+		_currentRotateSpeed = _nonRotateSpeed;
+		_aimRotateSpeed = _currentRotateSpeed;
+	}
+	else if(_currentSqrDistance <= _sqrMaxDistance)
+	{
+		_aimRotateSpeed = _maxRotateSpeed;
 	}
 	else
 	{
-		//_aimRotateSpeed = FMath::Lerp(_minRotateSpeed, _maxRotateSpeed, _rotateSpeedLerpRate);
 		_aimRotateSpeed = _minRotateSpeed;
 	}
 
-	// 현재 회전 속도를 목표 회전 속도로 부드럽게 보간
-	//_currentRotateSpeed = FMath::Lerp(_currentRotateSpeed, _aimRotateSpeed, _rotateSpeedLerpRate);
-	
+	// c++ 내적 메서드 사용
+	float _lerpRate = FVector::DotProduct(_forward, _toTarget.GetSafeNormal());
+	_lerpRate = FMath::Clamp(_lerpRate, 0.01f, 1.0f);
+	_currentRotateSpeed = FMath::Lerp(_currentRotateSpeed, _aimRotateSpeed, _lerpRate);
+
 	// 현재 회전값과 목표 회전값 사이를 부드럽게 보간 (회전 속도 적용)
-	FRotator _newRotation = FMath::RInterpTo(GetActorRotation(), _toTarget.GetSafeNormal().Rotation(), _deltaTime, _aimRotateSpeed);
-	
+	FRotator _newRotation = FMath::RInterpTo(GetActorRotation(), _toTarget.GetSafeNormal().Rotation(), _deltaTime, _currentRotateSpeed);
+
 	// 회전 적용
 	SetActorRotation(_newRotation);
 	
 	// 디버그 정보
 	GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::White, 
-		FString::Printf(TEXT("Rotation Speed: %.2f"), _aimRotateSpeed));
+		FString::Printf(TEXT("Rotation Speed: %.2f"), _currentRotateSpeed));
 		
 	DrawDebugLine(GetWorld(), _currentPosition, _targetPos, FColor::Green, false, 0.1f, 0, 1.0f);
 
 	DrawDebugSphere(GetWorld(), _targetPos, _minDistance, 16, FColor::Yellow, false, _deltaTime * 1.1f);
+	DrawDebugSphere(GetWorld(), _targetPos, _maxDistance, 16, FColor::Yellow, false, _deltaTime * 1.1f);
 
 	return true;
 }
