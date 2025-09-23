@@ -228,7 +228,6 @@ void AWaveManager::SpawnMonsterValueInWave()
         }
 
     }
-
     MonsterNumInWave = MonsterClassInWave.Num();
     ShakeMonsterList(); // 몬스터 리스트 섞기
 }
@@ -248,14 +247,16 @@ void AWaveManager::ShakeMonsterList()
         int j = FMath::RandRange(0, i);
         MonsterClassInWave.Swap(i, j);
     }
+    TArray<TSubclassOf<AActor>> Keys;
+    MonsterClassCheckInWave.GetKeys(Keys);
 
     // 디버그 로그: 섞인 결과
-    for (int i = 0; i < MonsterClassInWave.Num(); ++i)
+    for (int i = 0; i < MonsterClassCheckInWave.Num(); ++i)
     {
-        if (MonsterClassInWave[i])
+        if (MonsterClassCheckInWave[Keys[i]])
         {
-            FString ClassName = MonsterClassInWave[i]->GetName();
-            UE_LOG(LogTemp, Warning, TEXT("Shuffled Monster %d: %s"), i + 1, *ClassName);
+            FString ClassName = Keys[i]->GetName();
+            UE_LOG(LogTemp, Warning, TEXT("MonsterClassCheckInWave [%s] : %d"), *ClassName, MonsterClassCheckInWave[Keys[i]]);
         }
     }
 }
