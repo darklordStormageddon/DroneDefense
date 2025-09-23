@@ -16,14 +16,22 @@ void AWaveManager::BeginPlay()
 
     CurrentWave = 0;// Wave 초기화
 
-    BringMonsterValue();
     WaveStart();
 }
 
-void AWaveManager::Tick(float DeltaTime)
+// 웨이브 시작, 끝 함수
+void AWaveManager::WaveStart()
 {
-    Super::Tick(DeltaTime);
+    CurrentWave++;
+    // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
+    WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
+    LowWaveValue = WaveValue;
+    BringMonsterValue();
+    SpawnMonsterValueInWave();
+    SpawnMonster();
 }
+
+void AWaveManager::WaveEnd() { WaveStart(); }
 
 void AWaveManager::MonsterDeath()
 {
@@ -35,6 +43,9 @@ void AWaveManager::MonsterDeath()
 // 몬스터 Spawn, delay 설정
 void AWaveManager::SpawnMonster()
 {
+    FTimerHandle BossTempHandle;
+    FTimerDelegate BossDelegate;
+
     for (int index = 0; index < MonsterClassInWave.Num(); index++)
     {
         // 지연 시간 설정: index * SpawnDelay
@@ -66,6 +77,19 @@ void AWaveManager::SpawnMonster()
             // 타이머 설정
             GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, DelayTime, false);
     }
+    BossDelegate.BindUFunction(this, FName("BossSpawner"));
+    GetWorld()->GetTimerManager().SetTimer(BossTempHandle, BossDelegate, BossSpawnDelay, false);
+}
+  
+
+void AWaveManager::BossSpawner()
+{
+    FVector SpawnPos = SpawnPosition();
+    FRotator SpawnRot = FRotator::ZeroRotator;
+
+    GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnPos, SpawnRot);
+
+    //<< --- LevelSequence Spawn Pos  
 }
 
 // Spawn 위치 반환
@@ -99,6 +123,7 @@ void AWaveManager::BringMonsterValue()
 {
     //MonsterClassValues = 몬스터 Class와 몬스터 Value를 각각 Key값과 Value값으로 담은 맵형 Map함수
     MonsterClassValues.Empty();
+    MonsterClassInWave.Empty();
 
     // 임시로 몬스터 인스턴스를 받기 위해 맵 밖에 임시 위치
     FVector SpawnLocation = FVector(5000.f, 5000.f, 5000.f);
@@ -111,6 +136,7 @@ void AWaveManager::BringMonsterValue()
         SpawnedActor = GetWorld()->SpawnActor<AEnemyBase>(MonsterClass[index], SpawnLocation, FRotator::ZeroRotator);
         if (SpawnedActor)
         {
+            MonsterClassCheckInWave.Add(MonsterClass[index], 0);
             MonsterClassValues.Add(MonsterClass[index], SpawnedActor->Monster_Value);
         }
         SpawnedActor->Destroy();
@@ -130,29 +156,18 @@ void AWaveManager::LowStairLevel()
     MonsterClassValues.Empty();
     for (const auto& Pair : PairArray)
     {
+        MonsterClassCheckInWave.Add(Pair.Key, 0);
         MonsterClassValues.Add(Pair.Key, Pair.Value);
     }
 }
 
-// 웨이브 시작, 끝 함수
-void AWaveManager::WaveStart()
-{
-    CurrentWave++;
-    SpawnMonsterValueInWave();
-    SpawnMonster();
-}
-
-void AWaveManager::WaveEnd() { WaveStart(); }
 
 //현재 웨이브 값에맞 맞게 몬스터 소환 가능한 몬스터 양을 계산해서 클래스 별 몬스터를 몇 마리 뽑을 지 결정(랜덤 숫자 x 몬스터 반환값 만큼의 소환), 뽑 반환 X, 반환 값을 몬스터
 //랜덤한 몬스터 소환 가능한 웨이브 값으로 계산, 뽑 몬스터 소환 가능한 그래서 몬스터 소환 가능한 만큼만 뽑
 //이런식으로 웨이브 값이 0이 되거나 뽑 수 있는 몬스터가 없으면 반복
 void AWaveManager::SpawnMonsterValueInWave()
 {
-    MonsterClassInWave.Empty();//현재 웨이브의 MonsterClassInWave를 NULL값으로 초기화
-
-    // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
-    int WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
+    MonsterClassInWave.Empty();
 
     // 키(몬스터 클래스) 값들을 Keys라는 배열 형태로 가져 오기
     TArray<TSubclassOf<AActor>> Keys;
@@ -184,12 +199,15 @@ void AWaveManager::SpawnMonsterValueInWave()
             if (MonsterValueInWave <= 0) continue;
 
             // 해당 몬스터로 뽑 가능한지 계산하기 위해 웨이브의 값 / 몬스터 뽑 가능 값으로 계산
-            int DecideVal = WaveValue / MonsterValueInWave;
+            int DecideVal = LowWaveValue / MonsterValueInWave;
 
             // 넣어준 값이 0보다 작거나 같으면 뽑 가능해도 되는 상황이면 이 객체 처리를 스킵하고 다음 키로 넘어감
             if (DecideVal <= 0) continue;
 
             bAnyPossibleThisPass = true;
+                
+            
+            if (SpawnMaxCount(Keys[i]) <= MonsterClassCheckInWave[Keys[i]]) continue;
 
             // 0 ~ DecideVal 사이의 랜덤값을 뽑기 (0도 포함)
             int RandomVal = rand() % (DecideVal + 1);
@@ -198,12 +216,13 @@ void AWaveManager::SpawnMonsterValueInWave()
             for (int j = 0; j < RandomVal; ++j)
             {
                 MonsterClassInWave.Add(MonsterClassKey);
+                MonsterClassCheckInWave[Keys[i]]++;
             }
-            WaveValue -= RandomVal * MonsterValueInWave;
+            LowWaveValue -= RandomVal * MonsterValueInWave;
         }
 
         TSubclassOf<AActor> MonsterKey = Keys[Keys.Num() - 1];
-        if (WaveValue < MonsterClassValues[MonsterKey])
+        if (LowWaveValue < MonsterClassValues[MonsterKey])
         {
             break;
         }
@@ -214,6 +233,11 @@ void AWaveManager::SpawnMonsterValueInWave()
     ShakeMonsterList(); // 몬스터 리스트 섞기
 }
 
+int AWaveManager::SpawnMaxCount(TSubclassOf<AActor> MaxValueClass)
+{
+    int Max = WaveValue / MonsterClassValues[MaxValueClass] / 2;
+    return Max;
+}
 // Fisher-Yates 알고리즘으로 랜덤하게 섞기
 void AWaveManager::ShakeMonsterList()
 {
