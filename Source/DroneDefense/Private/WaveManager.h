@@ -18,11 +18,11 @@ private:
 protected:
     virtual void BeginPlay() override;
 
-    virtual void Tick(float DeltaTime) override;
-
-
     UPROPERTY(EditAnywhere, Category = "Spawn Setting")
     TArray<TSubclassOf<AEnemyBase>> MonsterClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Array")
+    TArray<TSubclassOf<AEnemyBase>> BossClass;
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -44,10 +44,14 @@ protected:
     UFUNCTION(BlueprintCallable, Category = "Spawn Position")
     void SpawnMonster();
 
+    int SpawnMaxCount(TSubclassOf<AActor> MaxValueClass);
+
     FVector SpawnPosition();
 
     UPROPERTY(BlueprintReadOnly, Category = "Value Check Debug")
     TMap<TSubclassOf<AActor>, int> MonsterClassValues;
+    TMap<TSubclassOf<AActor>, int> MonsterClassCheckInWave;
+    //TMap<TSubclassOf<AActor>, int> MonsterClassKill;
 
     void BringMonsterValue();
 
@@ -80,6 +84,15 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
     float SpawnDelay = 1.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Spawn Control")
+    float BossSpawnDelay;
+
+private:
+    UFUNCTION()
+    void BossSpawner();
+
+    int WaveValue;
+    int LowWaveValue;
 public:
     void MonsterDeath();
 
