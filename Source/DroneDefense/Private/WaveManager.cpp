@@ -14,14 +14,24 @@ void AWaveManager::BeginPlay()
 
     srand((unsigned int)time(NULL));
 
-    WaveStart();
+    InitWaveStartEnd(1, 5);
+    BeginWaveStart();
 }
 
-// 웨이브 시작, 끝 함수
-void AWaveManager::WaveStart()
+void AWaveManager::InitWaveStartEnd(int start, int end)
 {
-    CurrentWave++;
+    StartWave = start;
+    EndWave = end;
 
+    CurrentWave = StartWave;
+}
+
+void AWaveManager::BeginWaveStart() { WaveStart(CurrentWave); }
+
+// 웨이브 시작, 끝 함수
+void AWaveManager::WaveStart(int Wave)
+{
+    CurrentWave = Wave;
     // Monster Number Init
     TotalMonster = 0;
     SpawnMonsterAdd = 0;
@@ -37,7 +47,17 @@ void AWaveManager::WaveStart()
     SpawnMonster();
 }
 
-void AWaveManager::WaveEnd() { WaveStart(); }
+void AWaveManager::WaveEnd() 
+{
+    if (CurrentWave >= EndWave) 
+    {
+        UE_LOG(LogTemp, Warning, TEXT("맥스 웨이브 도달 게임 종료"))
+            return;
+    }
+
+    CurrentWave++;
+    WaveStart(CurrentWave);
+}
 
 void AWaveManager::MonsterDeath()
 {
@@ -93,8 +113,6 @@ void AWaveManager::SpawnMonster()
 
         if (index == 0)
         {
-            GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, StartDelay, false);
-
             UE_LOG(LogTemp, Warning, TEXT("%d"), index)
 
                 FVector SpawnLoc = SpawnPosition();
