@@ -21,11 +21,19 @@ void AWaveManager::BeginPlay()
 void AWaveManager::WaveStart()
 {
     CurrentWave++;
+
+    // Monster Number Init
+    TotalMonster = 0;
+    SpawnMonsterAdd = 0;
+    BossSpawnBool = false;
+
     // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
     WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
     LowWaveValue = WaveValue;
     BringMonsterValue();
     SpawnMonsterValueInWave();
+
+    UE_LOG(LogTemp, Warning, TEXT("%d"), MonsterClass.Num())
     SpawnMonster();
 }
 
@@ -46,16 +54,22 @@ void AWaveManager::SpawnMonster()
 
     for (int index = 0; index < MonsterClassInWave.Num(); index++)
     {
-        // 지연 시간 설정: index * SpawnDelay
         float DelayTime = index * SpawnDelay;
-
         FTimerHandle TempHandle;
         FTimerDelegate Delegate;
+
+        
+        // 지연 시간 설정: index * SpawnDelay
+        
         Delegate.BindLambda([this, index]()
             {
+                UE_LOG(LogTemp, Warning, TEXT("%d"), index)
+
                 if (MonsterClassInWave.IsValidIndex(index))
                 {
+                    
                     FActorSpawnParameters SpawnParams;
+
                     // 충돌 무시하고 무조건 스폰되도록 설정
                     SpawnParams.SpawnCollisionHandlingOverride =
                         ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -64,35 +78,60 @@ void AWaveManager::SpawnMonster()
                     FRotator SpawnRot = FRotator::ZeroRotator;
 
                     AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
+                    BossSpawner();
+
+                    SpawnMonsterAdd++;
+                    UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
+                    UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
+
                     if (Enemy)
                     {
                         Enemy->InitializeEnemy(this);
                     }
                 }
-            });
+         });
+
         if (index == 0)
         {
-            FVector SpawnLoc = SpawnPosition();
+            GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, StartDelay, false);
+
+            UE_LOG(LogTemp, Warning, TEXT("%d"), index)
+
+                FVector SpawnLoc = SpawnPosition();
             FRotator SpawnRot = FRotator::ZeroRotator;
             GetWorld()->SpawnActor<AActor>(MonsterClassInWave[index], SpawnLoc, SpawnRot);
+            SpawnMonsterAdd++;
+
+            UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
+            UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
         }
         else
             // 타이머 설정
             GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, DelayTime, false);
+
+            // 타이머 설정
     }
-    BossDelegate.BindUFunction(this, FName("BossSpawner"));
-    GetWorld()->GetTimerManager().SetTimer(BossTempHandle, BossDelegate, BossSpawnDelay, false);
 }
   
-
 void AWaveManager::BossSpawner()
 {
-    FVector SpawnPos = SpawnPosition();
+    FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
 
-    GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnPos, SpawnRot);
-
     //<< --- LevelSequence Spawn Pos  
+
+    float BossSpawnLogic = (float)SpawnMonsterAdd / (float)(TotalMonster - 1) * 100.0f;
+
+    UE_LOG(LogTemp, Warning, TEXT("BossSpawnLogic : %.f"), BossSpawnLogic);
+
+    if (BossSpawnBool == false && BossSpawnLogic >= BossSpawnPercent)
+    {
+        AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnLoc, SpawnRot);
+        SpawnMonsterAdd++;
+        UE_LOG(LogTemp, Warning, TEXT("보스 소환"));
+
+        BossSpawnBool = true;
+    }
 }
 
 // Spawn 위치 반환
@@ -133,6 +172,8 @@ void AWaveManager::BringMonsterValue()
     //Actor클래스를 포인터로 받아들인 SpawnedActor변수 생성
     AEnemyBase* SpawnedActor;
 
+    UE_LOG(LogTemp,Warning,TEXT("%d"), MonsterClass.Num())
+
     //Map함수에 몬스터 class를 넣기 MonsterClass.Num만큼 받아서 넣는 작업
     for (int index = 0; index < MonsterClass.Num(); index++)
     {
@@ -144,8 +185,8 @@ void AWaveManager::BringMonsterValue()
         }
         SpawnedActor->Destroy();
     }
-
-    LowStairLevel();
+    if(MonsterClass.Num() > 1)
+        LowStairLevel();
 }
 
 // 몬스터 키값 내림 차순으로 정렬
@@ -170,6 +211,10 @@ void AWaveManager::LowStairLevel()
 //이런식으로 웨이브 값이 0이 되거나 뽑 수 있는 몬스터가 없으면 반복
 void AWaveManager::SpawnMonsterValueInWave()
 {
+    int NonSpawnCheck = 0;
+    
+    TotalMonster++;//Boss
+    
     MonsterClassInWave.Empty();
 
     // 키(몬스터 클래스) 값들을 Keys라는 배열 형태로 가져 오기
@@ -178,16 +223,12 @@ void AWaveManager::SpawnMonsterValueInWave()
     //MonsterClassValues의 반환 시킬 키(몬스터 클래스)를 넣기
     MonsterClassValues.GetKeys(Keys);
 
-    // 반드시 "값이 큰순으로" 순회하도록 정렬해야 함 (가장 큰 값이 먼저)
-    Keys.Sort([&](const TSubclassOf<AActor>& A, const TSubclassOf<AActor>& B) {
-        return MonsterClassValues[A] > MonsterClassValues[B]; // 내림차순
-        });
+    int FullMaxCheck = 0;
 
     // WaveValue가 0이거나 뽑 이상 뽑 수 있는 몬스터가 없으면 반복
     while (WaveValue > 0)
     {
         bool bAnyAddedThisPass = false;    // 이번 패스에서 몬스터를 추가했는지
-        bool bAnyPossibleThisPass = false; // 이번 패스에서 추가 가능한 항목이 있었는지 (decideVal > 0)
 
         // 값이 큰순으로 몬스터를 뽑 수 있는지 스캔
         for (int i = 0; i < Keys.Num(); ++i)
@@ -207,7 +248,6 @@ void AWaveManager::SpawnMonsterValueInWave()
             // 넣어준 값이 0보다 작거나 같으면 뽑 가능해도 되는 상황이면 이 객체 처리를 스킵하고 다음 키로 넘어감
             if (DecideVal <= 0) continue;
 
-            bAnyPossibleThisPass = true;
             FString Class = Keys[i]->GetName();
 
             // 0 ~ DecideVal 사이의 랜덤값을 뽑기 (0도 포함)
@@ -217,13 +257,21 @@ void AWaveManager::SpawnMonsterValueInWave()
             //UE_LOG(LogTemp, Warning, TEXT("%s, %d"), *Class, MonsterClassCheckInWave[Keys[i]]);
             if (SpawnMaxCount(Keys[i]) < checkNum) continue;
 
+
+            if (SpawnMaxCount(Keys[i]) <= MonsterClassCheckInWave[Keys[i]])
+                FullMaxCheck++;
+
             // 그렇게 몬스터 소환할 개수, 랜덤한 숫자 뽑 MonsterClassInWave에 넣는다
             for (int j = 0; j < RandomVal; ++j)
             {
                 MonsterClassInWave.Add(MonsterClassKey);
                 MonsterClassCheckInWave[Keys[i]]++;
+                TotalMonster++;
+                bAnyAddedThisPass = true;
             }
             LowWaveValue -= RandomVal * MonsterValueInWave;
+            if (FullMaxCheck == Keys.Num())
+                break;
         }
 
         TSubclassOf<AActor> MonsterKey = Keys[Keys.Num() - 1];
@@ -232,6 +280,12 @@ void AWaveManager::SpawnMonsterValueInWave()
             break;
         }
 
+        if (bAnyAddedThisPass == false)
+        {
+            NonSpawnCheck++;
+            if (NonSpawnCheck >= 100)
+                break;
+        }
     }
     MonsterNumInWave = MonsterClassInWave.Num();
     ShakeMonsterList(); // 몬스터 리스트 섞기
