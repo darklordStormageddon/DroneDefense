@@ -13,6 +13,13 @@ class AWaveManager : public AActor
 
 private:
     int CurrentWave = StartWave;
+    int TotalMonster;
+    int SpawnMonsterAdd;
+
+    bool BossSpawnBool = false;
+
+    UPROPERTY(EditAnywhere, Category = "Boss Spawn Setting")
+    int BossSpawnPercent;
 
 protected:
     virtual void BeginPlay() override;
@@ -83,9 +90,6 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
     float SpawnDelay = 1.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Boss Spawn Control")
-    float BossSpawnDelay;
-
 private:
     UFUNCTION()
     void BossSpawner();
@@ -98,8 +102,11 @@ public:
     int getCurrentWave;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
-    int StartWave;
+    int StartWave = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
-    int MaxWave;
+    int MaxWave = 10;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Wave Control")
+    int BossPercentUI = BossSpawnPercent;
 };
