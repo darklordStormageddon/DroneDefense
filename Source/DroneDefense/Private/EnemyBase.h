@@ -33,24 +33,24 @@ protected:
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Stats")
-	int Max_HP;
+	float Max_HP;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Monster|Stats")
-	int HP;
+	float HP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Stats")
-	int Attack;
+	float Attack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Stats")
-	int Defense;
+	float Defense;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Stats")
-	int Speed;
+	float Speed;
 
 
 	// 몬스터 Value
 	UPROPERTY(BlueprintReadOnly, Category = "Monster|Stats")
-	int Monster_Value;
+	float Monster_Value;
 
 	void CalculateValue();
 

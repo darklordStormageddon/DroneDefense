@@ -53,10 +53,12 @@ void AEnemyBase::TakeDamage(float Damage)
 {
     GotHit.Broadcast();
     HP -= Damage;
+    Hit = true;
     UE_LOG(LogTemp, Warning, TEXT("HP : %d"), HP);
     if (HP <= 0)
     {
-        GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AEnemyBase::DestroySelf, 2.0f, false);
+        if (!GetWorldTimerManager().IsTimerActive(DestroyTimerHandle))
+         GetWorldTimerManager().SetTimer(DestroyTimerHandle, this, &AEnemyBase::DestroySelf, 2.0f, false);
     }
 }
 
