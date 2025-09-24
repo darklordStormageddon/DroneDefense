@@ -16,9 +16,6 @@ private:
     int TotalMonster;
     int SpawnMonsterAdd;
 
-    UPROPERTY(EditAnywhere, Category = "Delay")
-    float StartDelay;
-
     bool BossSpawnBool = false;
 
     UPROPERTY(EditAnywhere, Category = "Boss Spawn Setting")
@@ -72,7 +69,7 @@ protected:
     void SpawnMonsterValueInWave();
 
     UFUNCTION(BlueprintCallable, Category = "Wave Control")
-    void WaveStart();
+    void WaveStart(int Wave);
 
     UFUNCTION(BlueprintCallable, Category = "Wave Control")
     void WaveEnd();
@@ -108,8 +105,12 @@ public:
     int StartWave = 1;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
-    int MaxWave = 10;
+    int EndWave = 10;
 
     UPROPERTY(BlueprintReadOnly, Category = "Wave Control")
     int BossPercentUI = BossSpawnPercent;
+
+    void BeginWaveStart();
+
+    void InitWaveStartEnd(int start, int end);
 };
