@@ -30,7 +30,7 @@ protected:
 
 	float _sqrArriveRange = 0.0f;
 
-	bool _isTraceMode = false;
+	int32 _droneMode = 0;
 
 	FVector _targetLocation = FVector(0, 0, 0);
 	FRotator _targetRotator = FRotator(0, 0, 0);
@@ -64,10 +64,12 @@ protected:
 	float _maxDistance = 300.0f;
 
 	float _sqrMinDistance = 0.0f;
+
 	float _sqrMaxDistance = 0.0f;
 #pragma endregion
 
 #pragma region Attack
+	// Tracing Attack
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Tracing")
 	float _attackTracingRange = 100.0f;
 
@@ -78,6 +80,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Tracing")
 	float _attackTracingDelay = 1.0f;
+
+	// Horizontal Attack
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Horizontal")
+	float _attackHorizontalRange = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Horizontal")
+	float _attackHorizontalDamage = 10.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Horizontal")
+	float _attackHorizontalDelay = 1.0f;
 
 	float _leftAttackDelay = 0.0f;
 #pragma endregion
@@ -92,7 +104,7 @@ public:
 
 	void InitializeDrone(ADroneContainer* DroneContainer);
 
-	void ChangeTraceMode(bool IsTraceMode);
+	void ChangeDroneMode(int32 DroneMode);
 
 	void SetTargetPosition(FVector TargetLocation, FRotator TargetRotator);
 
@@ -106,4 +118,6 @@ protected:
 	void RotateOrbital(float DeltaTime);
 
 	void Attack(float DeltaTime);
+
+	TArray<AEnemyBase*> SearchTarget(float SearchRange);
 };

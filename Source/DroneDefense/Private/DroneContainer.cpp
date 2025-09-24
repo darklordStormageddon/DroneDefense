@@ -69,7 +69,7 @@ void ADroneContainer::GenerateDrone()
 		if (_newDrone)
 		{
 			_newDrone->InitializeDrone(this);
-			_newDrone->ChangeTraceMode(_currentDroneMode == (int32)E_DroneState_Type::Tracing);
+			_newDrone->ChangeDroneMode(_currentDroneMode);
 			
 			int32 _nextIndex = _droneMap.Num();
 			_droneMap.Add(_nextIndex, _newDrone);
@@ -97,7 +97,7 @@ void ADroneContainer::ChangeDroneMode()
 	{
 		if (ADroneBase* _drone = _droneMap.FindRef(i))
 		{
-			_drone->ChangeTraceMode(_currentDroneMode == (int32)E_DroneState_Type::Tracing);
+			_drone->ChangeDroneMode(_currentDroneMode);
 		}
 	}
 
