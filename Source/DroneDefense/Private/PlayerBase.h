@@ -21,6 +21,9 @@ protected:
 	UPROPERTY()
 	class ADroneContainer* _droneContainer = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player|Center Option")
+	TArray<struct FOrbitalCenterData> _orbitalCenterDataArray;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,11 +37,14 @@ public:
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Drone Container")
-	void GenerateDroneContainer(UStaticMeshComponent* FollowPosition);
+	void GenerateDroneContainer();
 
 	UFUNCTION(BlueprintCallable, Category = "Drone Container")
 	void GenerateDroneInput();
 
 	UFUNCTION(BlueprintCallable, Category = "Drone Container")
 	void ChangeDroneModeInput();
+
+	// 소켓 이름으로 컴포넌트를 찾는 함수
+	UStaticMeshComponent* FindComponentBySocketName(const FName& SocketName);
 };

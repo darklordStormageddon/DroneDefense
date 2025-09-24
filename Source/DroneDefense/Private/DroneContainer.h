@@ -17,6 +17,40 @@ enum class E_DroneState_Type : uint8
 	SIZE UMETA(DisplayName = "Horizontal")
 };
 
+USTRUCT(BlueprintType)
+struct FOrbitalCenterData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	E_DroneState_Type droneState;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName socketName;
+
+	UPROPERTY()
+	UStaticMeshComponent* orbitalCenter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float followCenterSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float rotationSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float rotationRadius;
+
+	FOrbitalCenterData()
+		: droneState(E_DroneState_Type::Standard)
+		, socketName(NAME_None)
+		, orbitalCenter(nullptr)
+		, followCenterSpeed(100.0f)
+		, rotationSpeed(10.0f)
+		, rotationRadius(10.0f)
+	{
+	}
+};
+
 UCLASS()
 class ADroneContainer : public AActor
 {
@@ -29,7 +63,11 @@ public:
 protected:
 #pragma region Follow Position
 	UPROPERTY()
-	class UStaticMeshComponent* _followPosition = nullptr;
+	class UStaticMeshComponent* _targetOrbitalCenter = nullptr;
+
+	TMap<int32, FOrbitalCenterData> _orbitalCenterDataMap = TMap<int32, FOrbitalCenterData>();
+
+	int32 _currentDroneMode = 0;
 #pragma endregion
 
 #pragma region Drone Core
@@ -44,8 +82,7 @@ protected:
 	UPROPERTY()
 	UStaticMeshComponent* _orbitalCenter = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = "0.0", UIMax = "1.0"), Category = "Drone|Orbital")
-	float _followCenterRate = 0.5f;
+	float _followCenterSpeed = 100.0f;
 
 	float _standardAngle = 0.0f;
 
@@ -55,10 +92,8 @@ protected:
 	UPROPERTY()
 	UStaticMeshComponent* _orbitalStandard = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Orbital")
 	float _rotationSpeed = 10.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Orbital")
 	float _rotationRadius = 10.0f;
 #pragma endregion
 
@@ -69,8 +104,6 @@ protected:
 	UPROPERTY()
 	TMap<int32, class ADroneBase*> _droneMap;
 #pragma endregion
-
-	int32 _droneMode;
 
 public:
 	UStaticMeshComponent* GetOrbitalCenter()
@@ -86,7 +119,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void OperateDroneContainer(UStaticMeshComponent* FollowPosition);
+	void OperateDroneContainer(TArray<FOrbitalCenterData> OrtibalCenterDataArray);
 
 	void GenerateDrone();
 
@@ -96,9 +129,11 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void InitializeDroneContainer(UStaticMeshComponent* DroneCore, UStaticMeshComponent* OrbitalCenter);
 
+	void UpdateCenterPosition();
+
 	void AddOrbitalPoint(FVector& Location);
 
-	void UpdateOrbitalPointsPositions();
+	void UpdateOrbitalPositions();
 
 	UStaticMeshComponent* CreateStaticMeshComponent(UStaticMeshComponent* Parent);
 };
