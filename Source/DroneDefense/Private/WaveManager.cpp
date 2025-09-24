@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Windows.h>
 #include "Kismet/GameplayStatics.h"
+#include "MyPlayerController.h"
 
 AWaveManager::AWaveManager()
 {
@@ -14,8 +15,14 @@ void AWaveManager::BeginPlay()
 
     srand((unsigned int)time(NULL));
 
-    InitWaveStartEnd(1, 5);
-    BeginWaveStart();
+    AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (!_playerController)
+    {
+        UE_LOG(LogTemp, Error, TEXT("PlayerController is nullptr"));
+        return;
+    }
+
+    _playerController->SetWaveManager(this);
 }
 
 void AWaveManager::InitWaveStartEnd(int start, int end)
@@ -24,6 +31,8 @@ void AWaveManager::InitWaveStartEnd(int start, int end)
     EndWave = end;
 
     CurrentWave = StartWave;
+    
+    UE_LOG(LogTemp, Warning, TEXT("Wave Manager Initialized - Start Wave: %d, Max Wave: %d"), StartWave, EndWave);
 }
 
 void AWaveManager::BeginWaveStart() { WaveStart(CurrentWave); }
