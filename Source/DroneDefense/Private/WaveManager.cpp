@@ -54,14 +54,17 @@ void AWaveManager::SpawnMonster()
 
     for (int index = 0; index < MonsterClassInWave.Num(); index++)
     {
-        // 지연 시간 설정: index * SpawnDelay
         float DelayTime = index * SpawnDelay;
         FTimerHandle TempHandle;
         FTimerDelegate Delegate;
+
+        
+        // 지연 시간 설정: index * SpawnDelay
+        
         Delegate.BindLambda([this, index]()
             {
-
                 UE_LOG(LogTemp, Warning, TEXT("%d"), index)
+
                 if (MonsterClassInWave.IsValidIndex(index))
                 {
                     
@@ -76,9 +79,10 @@ void AWaveManager::SpawnMonster()
 
                     AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
                     BossSpawner();
+
+                    SpawnMonsterAdd++;
                     UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
                     UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
-                    SpawnMonsterAdd++;
 
                     if (Enemy)
                     {
@@ -87,7 +91,23 @@ void AWaveManager::SpawnMonster()
                 }
          });
 
-        GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, DelayTime, false);
+        if (index == 0)
+        {
+            GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, StartDelay, false);
+
+            UE_LOG(LogTemp, Warning, TEXT("%d"), index)
+
+                FVector SpawnLoc = SpawnPosition();
+            FRotator SpawnRot = FRotator::ZeroRotator;
+            GetWorld()->SpawnActor<AActor>(MonsterClassInWave[index], SpawnLoc, SpawnRot);
+            SpawnMonsterAdd++;
+
+            UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
+            UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
+        }
+        else
+            // 타이머 설정
+            GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, DelayTime, false);
 
             // 타이머 설정
     }

@@ -16,6 +16,9 @@ private:
     int TotalMonster;
     int SpawnMonsterAdd;
 
+    UPROPERTY(EditAnywhere, Category = "Delay")
+    float StartDelay;
+
     bool BossSpawnBool = false;
 
     UPROPERTY(EditAnywhere, Category = "Boss Spawn Setting")
