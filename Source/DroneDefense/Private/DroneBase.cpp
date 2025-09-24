@@ -42,7 +42,7 @@ void ADroneBase::Tick(float DeltaTime)
 		_leftAttackDelay -= DeltaTime;
 	}
 
-	if (!_isTraceMode || !TryTracing())
+	if (_droneMode != (int32)E_DroneState_Type::Tracing || !TryTracing())
 	{
 		RotateOrbital(DeltaTime);
 	}
@@ -55,10 +55,13 @@ void ADroneBase::InitializeDrone(ADroneContainer* DroneContainer)
 	_droneContainer = DroneContainer;
 }
 
-void ADroneBase::ChangeTraceMode(bool IsTraceMode)
+void ADroneBase::ChangeDroneMode(int32 DroneMode)
 {
-	_isTraceMode = IsTraceMode;
-	SearchTarget();
+	_droneMode = DroneMode;
+	if (_droneMode == (int32)E_DroneState_Type::Tracing)
+	{
+		SearchTarget();
+	}
 }
 
 void ADroneBase::SetTargetPosition(FVector TargetLocation, FRotator TargetRotator)
@@ -198,7 +201,7 @@ void ADroneBase::RotateOrbital(float DeltaTime)
 		return;
 	}
 
-	Tracing(_targetLocation, _minRotateSpeed);
+	Tracing(_targetLocation, _maxRotateSpeed);
 }
 
 void ADroneBase::Attack(float DeltaTime)
@@ -206,13 +209,12 @@ void ADroneBase::Attack(float DeltaTime)
 	if (_leftAttackDelay > 0.0f)
 		return;
 	
-	if (_isDebugDraw)
+	float _attackRange = 0.0f;
+	switch (_droneMode)
 	{
-		DrawDebugSphere(GetWorld(), GetActorLocation(), _attackTracingRange, 16, FColor::Red, false, DeltaTime * 1.01f);
-	}
-	
-	if (_isTraceMode)
+	case (int32)E_DroneState_Type::Tracing:
 	{
+		_attackRange = _attackTracingRange;
 		if (_target.IsValid())
 		{
 			FVector _targetPos = _target->GetActorLocation() + FVector(0, 0, _droneHeight);
@@ -223,9 +225,70 @@ void ADroneBase::Attack(float DeltaTime)
 				_leftAttackDelay = _attackTracingDelay;
 			}
 		}
+		break;
 	}
-	else
+	case (int32)E_DroneState_Type::Horizontal:
 	{
-	
+		_attackRange = _attackHorizontalRange;
+
+		bool _isAttacked = false;
+		TArray<AEnemyBase*> _enemieArray = SearchTarget(_attackHorizontalRange);
+		for (AEnemyBase* _enemy : _enemieArray)
+		{
+			if (!_enemy)
+				continue;
+
+			_enemy->TakeDamage(_attackHorizontalDamage);
+			_isAttacked = true;
+		}
+		
+		if (_isAttacked)
+		{
+			_leftAttackDelay = _attackHorizontalDelay;
+		}
+		break;
 	}
+	}
+
+	if (_isDebugDraw)
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), _attackRange, 16, FColor::Red, false, DeltaTime * 1.01f);
+	}
+}
+
+TArray<AEnemyBase*> ADroneBase::SearchTarget(float SearchRange)
+{
+	TArray<AEnemyBase*> _enemies;
+
+	UWorld* _world = GetWorld();
+	if (!_world)
+		return _enemies;
+
+	// Sphere 범위 내의 액터만 탐색
+	TArray<FOverlapResult> _overlaps;
+	FCollisionQueryParams _queryParams;
+	_queryParams.AddIgnoredActor(this);
+
+	bool _bOverlap = _world->OverlapMultiByObjectType(
+		_overlaps,
+		GetActorLocation(),
+		FQuat::Identity,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn),
+		FCollisionShape::MakeSphere(SearchRange),
+		_queryParams
+	);
+
+	if (_bOverlap)
+	{
+		for (const FOverlapResult& _result : _overlaps)
+		{
+			AEnemyBase* _enemy = Cast<AEnemyBase>(_result.GetActor());
+			if (_enemy)
+			{
+				_enemies.Add(_enemy);
+			}
+		}
+	}
+
+	return _enemies;
 }
