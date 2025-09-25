@@ -40,6 +40,9 @@ void AWaveManager::BeginWaveStart() { WaveStart(CurrentWave); }
 // 웨이브 시작, 끝 함수
 void AWaveManager::WaveStart(int Wave)
 {
+    if (SpawnCheck == false)
+        WaveEnd();
+    
     CurrentWave = Wave;
     // Monster Number Init
     TotalMonster = 0;
@@ -52,24 +55,30 @@ void AWaveManager::WaveStart(int Wave)
     BringMonsterValue();
     SpawnMonsterValueInWave();
 
-    UE_LOG(LogTemp, Warning, TEXT("%d"), MonsterClass.Num())
     SpawnMonster();
+    
 }
 
 void AWaveManager::WaveEnd() 
 {
-    if (CurrentWave >= EndWave) 
+    if (CurrentWave >= EndWave)
+        SpawnEnd();
+    else
     {
-        UE_LOG(LogTemp, Warning, TEXT("맥스 웨이브 도달 게임 종료"))
-            return;
+        CurrentWave++;
+        WaveStart(CurrentWave);
     }
+        
+}
 
-    CurrentWave++;
-    WaveStart(CurrentWave);
+void AWaveManager::SpawnEnd()
+{
+    SpawnCheck = false;
 }
 
 void AWaveManager::MonsterDeath()
 {
+    UE_LOG(LogTemp, Warning, TEXT("죽음"));
     MonsterNumInWave--;
     if (MonsterNumInWave <= 0)
         WaveEnd();
@@ -87,32 +96,32 @@ void AWaveManager::SpawnMonster()
         FTimerHandle TempHandle;
         FTimerDelegate Delegate;
 
-        
         // 지연 시간 설정: index * SpawnDelay
         
         Delegate.BindLambda([this, index]()
             {
-                UE_LOG(LogTemp, Warning, TEXT("%d"), index)
-
+                /*UE_LOG(LogTemp, Warning, TEXT("%d"), index)*/
                 if (MonsterClassInWave.IsValidIndex(index))
                 {
                     
+                    FVector SpawnLoc = SpawnPosition();
+                    FRotator SpawnRot = FRotator::ZeroRotator;
+
+
                     FActorSpawnParameters SpawnParams;
 
                     // 충돌 무시하고 무조건 스폰되도록 설정
                     SpawnParams.SpawnCollisionHandlingOverride =
                         ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-                    FVector SpawnLoc = SpawnPosition();
-                    FRotator SpawnRot = FRotator::ZeroRotator;
-
-                    AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
+                    Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
                     BossSpawner();
 
                     SpawnMonsterAdd++;
+                    /*
                     UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
                     UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
-
+                    */
                     if (Enemy)
                     {
                         Enemy->InitializeEnemy(this);
@@ -124,13 +133,20 @@ void AWaveManager::SpawnMonster()
         {
             UE_LOG(LogTemp, Warning, TEXT("%d"), index)
 
-                FVector SpawnLoc = SpawnPosition();
+            FVector SpawnLoc = SpawnPosition();
             FRotator SpawnRot = FRotator::ZeroRotator;
-            GetWorld()->SpawnActor<AActor>(MonsterClassInWave[index], SpawnLoc, SpawnRot);
+
+            FActorSpawnParameters SpawnParams;
+
+            // 충돌 무시하고 무조건 스폰되도록 설정
+            SpawnParams.SpawnCollisionHandlingOverride =
+                ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+            Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
             SpawnMonsterAdd++;
 
-            UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
-            UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
+            //UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
+            //UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
         }
         else
             // 타이머 설정
@@ -149,11 +165,9 @@ void AWaveManager::BossSpawner()
 
     float BossSpawnLogic = (float)SpawnMonsterAdd / (float)(TotalMonster - 1) * 100.0f;
 
-    UE_LOG(LogTemp, Warning, TEXT("BossSpawnLogic : %.f"), BossSpawnLogic);
-
     if (BossSpawnBool == false && BossSpawnLogic >= BossSpawnPercent)
     {
-        AEnemyBase* Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnLoc, SpawnRot);
+        Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnLoc, SpawnRot);
         SpawnMonsterAdd++;
         UE_LOG(LogTemp, Warning, TEXT("보스 소환"));
 
@@ -198,8 +212,6 @@ void AWaveManager::BringMonsterValue()
     FVector SpawnLocation = FVector(5000.f, 5000.f, 5000.f);
     //Actor클래스를 포인터로 받아들인 SpawnedActor변수 생성
     AEnemyBase* SpawnedActor;
-
-    UE_LOG(LogTemp,Warning,TEXT("%d"), MonsterClass.Num())
 
     //Map함수에 몬스터 class를 넣기 MonsterClass.Num만큼 받아서 넣는 작업
     for (int index = 0; index < MonsterClass.Num(); index++)

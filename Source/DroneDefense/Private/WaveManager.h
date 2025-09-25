@@ -12,6 +12,8 @@ class AWaveManager : public AActor
     AWaveManager();
 
 private:
+    AEnemyBase* Enemy;
+
     int CurrentWave = StartWave;
     int TotalMonster;
     int SpawnMonsterAdd;
@@ -96,6 +98,8 @@ private:
 
     int WaveValue;
     int LowWaveValue;
+
+    bool SpawnCheck = true;
 public:
     void MonsterDeath();
 
@@ -113,4 +117,7 @@ public:
     void BeginWaveStart();
 
     void InitWaveStartEnd(int start, int end);
+
+    void SpawnEnd();
+
 };
