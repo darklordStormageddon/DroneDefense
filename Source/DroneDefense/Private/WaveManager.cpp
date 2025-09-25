@@ -40,6 +40,7 @@ void AWaveManager::BeginWaveStart() { WaveStart(CurrentWave); }
 // 웨이브 시작, 끝 함수
 void AWaveManager::WaveStart(int Wave)
 {
+    UE_LOG(LogTemp, Warning, TEXT("현재 웨이브는 %d 웨이브입니다."), CurrentWave)
     if (SpawnCheck == false)
         WaveEnd();
     
@@ -78,7 +79,7 @@ void AWaveManager::SpawnEnd()
 
 void AWaveManager::MonsterDeath()
 {
-    UE_LOG(LogTemp, Warning, TEXT("죽음, 현재 남은 몬스터 수 : %d"), MonsterNumInWave);
+    UE_LOG(LogTemp, Warning, TEXT("몬스터 사망, 현재 남은 몬스터 수 : %d"), MonsterNumInWave);
     MonsterNumInWave--;
     if (MonsterNumInWave <= 0)
         WaveEnd();
@@ -161,17 +162,21 @@ void AWaveManager::BossSpawner()
     FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
 
+    int BossHave = sizeof(BossClass) / sizeof(TSubclassOf<AEnemyBase>);
+
     //<< --- LevelSequence Spawn Pos  
-
-    float BossSpawnLogic = (float)SpawnMonsterAdd / (float)(TotalMonster - 1) * 100.0f;
-
-    if (BossSpawnBool == false && BossSpawnLogic >= BossSpawnPercent)
+    if (CurrentWave < BossHave)
     {
-        Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnLoc, SpawnRot);
-        SpawnMonsterAdd++;
-        UE_LOG(LogTemp, Warning, TEXT("보스 소환"));
+        float BossSpawnLogic = (float)SpawnMonsterAdd / (float)(TotalMonster - 1) * 100.0f;
 
-        BossSpawnBool = true;
+        if (BossSpawnBool == false && BossSpawnLogic >= BossSpawnPercent)
+        {
+            Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave - 1], SpawnLoc, SpawnRot);
+            SpawnMonsterAdd++;
+            UE_LOG(LogTemp, Warning, TEXT("보스 소환"));
+
+            BossSpawnBool = true;
+        }
     }
 }
 
