@@ -43,7 +43,7 @@ void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
     );
 }
 
-void AMyPlayerController::StartPlay()
+void AMyPlayerController::StartPlay_Implementation()
 {
     _waveManager->BeginWaveStart();
 }

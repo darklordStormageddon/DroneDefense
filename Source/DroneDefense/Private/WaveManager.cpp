@@ -44,6 +44,13 @@ void AWaveManager::WaveStart(int Wave)
         WaveEnd();
     
     CurrentWave = Wave;
+
+    AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (_playerController)
+    {
+        _playerController->ChangeWave(CurrentWave);
+    }
+
     // Monster Number Init
     TotalMonster = 0;
     SpawnMonsterAdd = 0;

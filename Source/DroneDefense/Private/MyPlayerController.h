@@ -33,6 +33,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	int GetEndWave();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	void ChangeWave(int NextWave);
+
 protected:
+	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
 	void StartPlay();
+	virtual void StartPlay_Implementation();
 };

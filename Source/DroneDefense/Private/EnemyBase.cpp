@@ -63,7 +63,6 @@ void AEnemyBase::DestroySelf()
         WaveManagerActor->MonsterDeath();
     }
 
-
     if (!GetWorldTimerManager().IsTimerActive(DestroyTimerHandle))
         GetWorldTimerManager().SetTimer(DestroyTimerHandle, [this]()
             {
@@ -73,6 +72,15 @@ void AEnemyBase::DestroySelf()
 
 bool AEnemyBase::TakeDamage_Implementation(float Damage)
 {
+    if (HP <= 0)
+        return false;
+
+    HP -= Damage;
+    if (HP <= 0)
+    {
+
+        DestroySelf();
+    }
 
     return true;
 }
