@@ -37,7 +37,6 @@ void AEnemyBase::BeginPlay()
     if (FoundActors.Num() > 0)
     {
         WaveManagerActor = Cast<AWaveManager>(FoundActors[0]); // 첫 번째 액터 사용
-        UE_LOG(LogTemp, Display, TEXT("Found Wave manager"));
     }
 }
 
