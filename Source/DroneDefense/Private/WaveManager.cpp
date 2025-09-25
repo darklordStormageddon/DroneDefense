@@ -86,8 +86,8 @@ void AWaveManager::SpawnEnd()
 
 void AWaveManager::MonsterDeath()
 {
-    UE_LOG(LogTemp, Warning, TEXT("몬스터 사망, 현재 남은 몬스터 수 : %d"), MonsterNumInWave);
     MonsterNumInWave--;
+    UE_LOG(LogTemp, Warning, TEXT("몬스터 사망, 현재 남은 몬스터 수 : %d"), MonsterNumInWave);
     if (MonsterNumInWave <= 0)
         WaveEnd();
 }
