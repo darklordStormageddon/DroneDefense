@@ -73,33 +73,7 @@ void AEnemyBase::DestroySelf()
 
 bool AEnemyBase::TakeDamage_Implementation(float Damage)
 {
-    
-    //GotHit.Broadcast();
-    if (HP <= 0) return false;
 
-    HP -= Damage;
-    if (HP <= 0)
-    {
-        Dead = true;
-
-        DestroySelf();
-    }
-    /*else
-    {
-        Hit = true;//피격 시
-        if (MonsterWidget)
-            MonsterWidget->SetVisibility(false);//위젯 컴포넌트 숨기기
-        GetWorldTimerManager().SetTimer(
-            HitTimerHandle,
-            [this]()   // 2초 뒤 실행
-            {
-                if (MonsterWidget)
-                    MonsterWidget->SetVisibility(true);//위젯 컴포넌트 보이기
-            },
-            2.0f,
-            false
-        );
-    }*/
     return true;
 }
 
