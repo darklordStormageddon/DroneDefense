@@ -86,3 +86,6 @@ DerivedDataCache/*
 /Content/ParagonMinions/
 
 /Content/ParagonWraith/
+
+#ignore paragon
+/Content/BoomExplosion/
