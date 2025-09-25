@@ -69,6 +69,10 @@ protected:
 #pragma endregion
 
 #pragma region Attack
+	UParticleSystemComponent* _particleTracingAttack = nullptr;
+
+	UParticleSystemComponent* _particleHorizontalAttack = nullptr;
+
 	// Tracing Attack
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Tracing")
 	float _attackTracingRange = 100.0f;
@@ -109,6 +113,9 @@ public:
 	void SetTargetPosition(FVector TargetLocation, FRotator TargetRotator);
 
 protected:
+	UFUNCTION(BlueprintCallable)
+	void CachAttackParticle(UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle);
+
 	void SearchTarget();
 
 	bool TryTracing();

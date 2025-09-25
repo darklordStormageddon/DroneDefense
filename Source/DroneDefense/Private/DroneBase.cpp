@@ -7,6 +7,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
 ADroneBase::ADroneBase()
@@ -20,7 +21,7 @@ ADroneBase::ADroneBase()
 void ADroneBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// 제곱 거리 미리 계산 (최적화)
 	_sqrArriveRange = FMath::Pow(_arriveRange, 2);
 	_sqrMinDistance = FMath::Pow(_minDistance, 2);
@@ -53,6 +54,21 @@ void ADroneBase::Tick(float DeltaTime)
 void ADroneBase::InitializeDrone(ADroneContainer* DroneContainer)
 {
 	_droneContainer = DroneContainer;
+}
+
+void ADroneBase::CachAttackParticle(UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle)
+{
+	_particleTracingAttack = TracingAttackParticle;
+	_particleHorizontalAttack = HorizontalAttackParticle;
+	if (_particleTracingAttack)
+	{
+		_particleTracingAttack->DeactivateImmediate();
+	}
+
+	if (_particleHorizontalAttack)
+	{
+		_particleHorizontalAttack->DeactivateImmediate();
+	}
 }
 
 void ADroneBase::ChangeDroneMode(int32 DroneMode)
@@ -222,6 +238,10 @@ void ADroneBase::Attack(float DeltaTime)
 			if (_toTarget.SquaredLength() <= _sqrAttackTracingRange)
 			{
 				_target->TakeDamage(_attackTracingDamage);
+				if (_particleTracingAttack)
+				{
+					_particleTracingAttack->ActivateSystem();
+				}
 				_leftAttackDelay = _attackTracingDelay;
 			}
 		}
@@ -239,6 +259,10 @@ void ADroneBase::Attack(float DeltaTime)
 				continue;
 
 			_enemy->TakeDamage(_attackHorizontalDamage);
+			if (_particleHorizontalAttack)
+			{
+				_particleHorizontalAttack->ActivateSystem();
+			}
 			_isAttacked = true;
 		}
 		
