@@ -22,6 +22,7 @@ public:
 	AEnemyBase();
 	AWaveManager* _playerController = nullptr;
 
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Debug")
 	bool _isDestroyCount = false;
@@ -83,10 +84,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
 	void ToggleClose();
 
+	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
+	void ToggleHit();
+
 private:
 	FTimerHandle DestroyTimerHandle;
 
+	AWaveManager* WaveManagerActor = nullptr;
+
 public:
-	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
-	void TakeDamage(float Damage);
+	UFUNCTION(BlueprintNativeEvent, Category = "Monster|Events")
+	bool TakeDamage(float Damage);
+	virtual bool TakeDamage_Implementation(float Damage);
+
 };
