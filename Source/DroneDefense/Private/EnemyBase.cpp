@@ -42,7 +42,7 @@ void AEnemyBase::BeginPlay()
 
 void AEnemyBase::CalculateValue()
 {
-    Monster_Value = Max_HP + Attack + Defense + Speed;
+    Monster_Value = Max_HP + Attack + Defense*5 + Speed/100;
 }
 
 void AEnemyBase::InitializeEnemy(AWaveManager* myown)
