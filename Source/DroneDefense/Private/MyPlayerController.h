@@ -17,7 +17,7 @@ class AMyPlayerController : public APlayerController
 
 private :
 	UFUNCTION(BlueprintCallable, Category = "Game End")
-	void GameOver(AWaveManager* WaveManager);
+	void GameOver();
 protected:
 	AWaveManager* _waveManager = nullptr;
 

@@ -48,9 +48,7 @@ void AMyPlayerController::StartPlay_Implementation()
     _waveManager->BeginWaveStart();
 }
 
-void AMyPlayerController::GameOver(AWaveManager* WaveManager)
+void AMyPlayerController::GameOver()
 {
-    _waveManager = WaveManager;
-    
     _waveManager->SpawnEnd();
 }
