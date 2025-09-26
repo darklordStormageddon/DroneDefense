@@ -52,11 +52,6 @@ void AEnemyBase::InitializeEnemy(AWaveManager* myown)
 
 void AEnemyBase::DestroySelf()
 {
-    if (_playerController)
-    {
-        _playerController->MonsterDeath();
-    }
-
     // MonsterDeath »£√‚
     if (WaveManagerActor)
     {
