@@ -72,10 +72,13 @@ void AWaveManager::WaveStart(int Wave)
 void AWaveManager::WaveEnd() 
 {
     if (CurrentWave >= EndWave)
+    {
         SpawnEnd();
+    }
     else
     {
         CurrentWave++;
+        
         WaveStart(CurrentWave);
     }
         
@@ -261,7 +264,7 @@ void AWaveManager::LowStairLevel()
     TArray<TPair<TSubclassOf<AActor>, int>> PairArray = MonsterClassValues.Array();
     PairArray.Sort([](const TPair<TSubclassOf<AActor>, int>& A, const TPair<TSubclassOf<AActor>, int>& B)
         {
-            return A.Value < B.Value; // 오름차순 정렬
+            return A.Value > B.Value; // 오름차순 정렬
         });
     MonsterClassValues.Empty();
     for (const auto& Pair : PairArray)
@@ -314,18 +317,18 @@ void AWaveManager::SpawnMonsterValueInWave()
             // 넣어준 값이 0보다 작거나 같으면 뽑 가능해도 되는 상황이면 이 객체 처리를 스킵하고 다음 키로 넘어감
             if (DecideVal <= 0) continue;
 
-            FString Class = Keys[i]->GetName();
+            //FString Class = Keys[i]->GetName();
 
             // 0 ~ DecideVal 사이의 랜덤값을 뽑기 (0도 포함)
             int RandomVal = rand() % (DecideVal + 1);
 
-            int checkNum = RandomVal + MonsterClassCheckInWave[Keys[i]];
-            //UE_LOG(LogTemp, Warning, TEXT("%s, %d"), *Class, MonsterClassCheckInWave[Keys[i]]);
-            if (SpawnMaxCount(Keys[i]) < checkNum) continue;
+            //int checkNum = RandomVal + MonsterClassCheckInWave[Keys[i]];
+            ////UE_LOG(LogTemp, Warning, TEXT("%s, %d"), *Class, MonsterClassCheckInWave[Keys[i]]);
+            //if (SpawnMaxCount(Keys[i]) < checkNum) continue;
 
 
-            if (SpawnMaxCount(Keys[i]) <= MonsterClassCheckInWave[Keys[i]])
-                FullMaxCheck++;
+            //if (SpawnMaxCount(Keys[i]) <= MonsterClassCheckInWave[Keys[i]])
+            //    FullMaxCheck++;
 
             // 그렇게 몬스터 소환할 개수, 랜덤한 숫자 뽑 MonsterClassInWave에 넣는다
             for (int j = 0; j < RandomVal; ++j)
@@ -335,8 +338,9 @@ void AWaveManager::SpawnMonsterValueInWave()
                 bAnyAddedThisPass = true;
             }
             LowWaveValue -= RandomVal * MonsterValueInWave;
+            /*
             if (FullMaxCheck == Keys.Num())
-                break;
+                break;*/
         }
 
         TSubclassOf<AActor> MonsterKey = Keys[Keys.Num() - 1];
@@ -345,23 +349,23 @@ void AWaveManager::SpawnMonsterValueInWave()
             break;
         }
 
-        if (bAnyAddedThisPass == false)
-        {
-            NonSpawnCheck++;
-            if (NonSpawnCheck >= 100)
-                break;
-        }
+        //if (bAnyAddedThisPass == false)
+        //{
+        //    NonSpawnCheck++;
+        //    if (NonSpawnCheck >= 100)
+        //        break;
+        //}
     }
     MonsterNumInWave = TotalMonster = MonsterClassInWave.Num();
     ShakeMonsterList(); // 몬스터 리스트 섞기
 }
 
-int AWaveManager::SpawnMaxCount(TSubclassOf<AActor> MaxValueClass)
-{
-    int Max = WaveValue / MonsterClassValues[MaxValueClass] / 2;
-    //UE_LOG(LogTemp, Warning, TEXT("%d"), Max);
-    return Max;
-}
+//int AWaveManager::SpawnMaxCount(TSubclassOf<AActor> MaxValueClass)
+//{
+//    int Max = WaveValue / MonsterClassValues[MaxValueClass] / 2;
+//    //UE_LOG(LogTemp, Warning, TEXT("%d"), Max);
+//    return Max;
+//}
 // Fisher-Yates 알고리즘으로 랜덤하게 섞기
 void AWaveManager::ShakeMonsterList()
 {
