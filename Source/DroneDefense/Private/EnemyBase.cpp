@@ -70,7 +70,11 @@ bool AEnemyBase::TakeDamage_Implementation(float Damage)
     if (HP <= 0)
         return false;
 
-    HP -= Damage;
+    if (Damage > Defense)
+    {
+        HP -= Damage - Defense;
+    }
+
     if (HP <= 0)
     {
 
