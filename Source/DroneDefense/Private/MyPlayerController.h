@@ -36,11 +36,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	void ChangeWave(int NextWave);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	void ChangeEnemyCount(int LeftEnemyCount, int TotalEnemyCount);
+
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
 	void StartPlay();
 	virtual void StartPlay_Implementation();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
-	void ChangeEnemyCount(int LeftEnemyCount, int TotalEnemyCount);
 };

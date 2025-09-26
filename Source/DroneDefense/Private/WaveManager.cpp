@@ -45,8 +45,9 @@ void AWaveManager::WaveStart(int Wave)
         WaveEnd();
     
     CurrentWave = Wave;
-
+    
     AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    
     if (_playerController)
     {
         _playerController->ChangeWave(CurrentWave);
@@ -63,8 +64,9 @@ void AWaveManager::WaveStart(int Wave)
     BringMonsterValue();
     SpawnMonsterValueInWave();
 
+    _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
+
     SpawnMonster();
-    
 }
 
 void AWaveManager::WaveEnd() 
@@ -84,10 +86,21 @@ void AWaveManager::SpawnEnd()
     SpawnCheck = false;
 }
 
+void AWaveManager::GameDefeatSpawnEnd()
+{
+    SpawnEnd();
+    WaveEnd();
+}
+
 void AWaveManager::MonsterDeath()
 {
     MonsterNumInWave--;
     UE_LOG(LogTemp, Warning, TEXT("몬스터 사망, 현재 남은 몬스터 수 : %d"), MonsterNumInWave);
+
+    AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+    _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
+
     if (MonsterNumInWave <= 0)
         WaveEnd();
 }
@@ -123,7 +136,9 @@ void AWaveManager::SpawnMonster()
                         ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
                     Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
-                    BossSpawner();
+                    
+                    // 보스 어레이가 NULL이면 오류 뜨므로 해결 중요
+                        BossSpawner();
 
                     SpawnMonsterAdd++;
                     /*
@@ -317,7 +332,6 @@ void AWaveManager::SpawnMonsterValueInWave()
             {
                 MonsterClassInWave.Add(MonsterClassKey);
                 MonsterClassCheckInWave[Keys[i]]++;
-                TotalMonster++;
                 bAnyAddedThisPass = true;
             }
             LowWaveValue -= RandomVal * MonsterValueInWave;
@@ -338,7 +352,7 @@ void AWaveManager::SpawnMonsterValueInWave()
                 break;
         }
     }
-    MonsterNumInWave = MonsterClassInWave.Num();
+    MonsterNumInWave = TotalMonster = MonsterClassInWave.Num();
     ShakeMonsterList(); // 몬스터 리스트 섞기
 }
 
