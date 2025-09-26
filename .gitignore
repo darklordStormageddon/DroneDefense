@@ -89,3 +89,6 @@ DerivedDataCache/*
 
 #ignore paragon
 /Content/BoomExplosion/
+
+#Movies
+/Content/Movies/
