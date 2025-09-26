@@ -15,6 +15,9 @@ class AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+private :
+	UFUNCTION(BlueprintCallable, Category = "Game End")
+	void GameOver(AWaveManager* WaveManager);
 protected:
 	AWaveManager* _waveManager = nullptr;
 
@@ -43,4 +46,6 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
 	void StartPlay();
 	virtual void StartPlay_Implementation();
+
+
 };
