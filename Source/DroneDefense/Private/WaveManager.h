@@ -52,7 +52,7 @@ protected:
     UFUNCTION(BlueprintCallable, Category = "Spawn Position")
     void SpawnMonster();
 
-    int SpawnMaxCount(TSubclassOf<AActor> MaxValueClass);
+    //int SpawnMaxCount(TSubclassOf<AActor> MaxValueClass);
 
     FVector SpawnPosition();
 
