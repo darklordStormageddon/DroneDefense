@@ -120,4 +120,6 @@ public:
 
     void SpawnEnd();
 
+    void GameDefeatSpawnEnd();
+
 };
