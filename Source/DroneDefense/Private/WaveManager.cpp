@@ -67,6 +67,9 @@ void AWaveManager::WaveStart(int Wave)
     _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
 
     SpawnMonster();
+
+    if (CurrentWave % 5 == 0)
+        BossSpawner();
 }
 
 void AWaveManager::WaveEnd() 
@@ -139,11 +142,9 @@ void AWaveManager::SpawnMonster()
                         ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
                     Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
-                    
-                    // 보스 어레이가 NULL이면 오류 뜨므로 해결 중요
-                        BossSpawner();
 
                     SpawnMonsterAdd++;
+
                     /*
                     UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
                     UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
@@ -187,7 +188,7 @@ void AWaveManager::BossSpawner()
     FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
 
-    int BossHave = sizeof(BossClass) / sizeof(TSubclassOf<AEnemyBase>);
+    int BossHave = BossClass.Num();
 
     //<< --- LevelSequence Spawn Pos  
     if (CurrentWave < BossHave)
@@ -282,8 +283,9 @@ void AWaveManager::SpawnMonsterValueInWave()
 {
     int NonSpawnCheck = 0;
     
-    TotalMonster++;//Boss
-    
+    if (CurrentWave % 5 == 0)
+        TotalMonster++;//Boss
+
     MonsterClassInWave.Empty();
 
     // 키(몬스터 클래스) 값들을 Keys라는 배열 형태로 가져 오기
