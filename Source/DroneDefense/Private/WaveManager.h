@@ -12,11 +12,12 @@ class AWaveManager : public AActor
     AWaveManager();
 
 private:
+
     AEnemyBase* Enemy;
 
     int CurrentWave = StartWave;
-    int TotalMonster;
-    int SpawnMonsterAdd;
+
+    
 
     bool BossSpawnBool = false;
 
@@ -73,9 +74,6 @@ protected:
     UFUNCTION(BlueprintCallable, Category = "Wave Control")
     void WaveStart(int Wave);
 
-    UFUNCTION(BlueprintCallable, Category = "Wave Control")
-    void WaveEnd();
-
     UPROPERTY(BlueprintReadOnly, Category = "Wave Control")
     int MonsterNumInWave;
 
@@ -122,4 +120,8 @@ public:
 
     void GameDefeatSpawnEnd();
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
+    int TotalMonster;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
+    int SpawnMonsterAdd;
 };
