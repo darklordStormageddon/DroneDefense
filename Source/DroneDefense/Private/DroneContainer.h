@@ -32,9 +32,6 @@ struct FOrbitalCenterData
 	UStaticMeshComponent* orbitalCenter;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float followCenterSpeed;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float rotationSpeed;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -44,7 +41,6 @@ struct FOrbitalCenterData
 		: droneState(E_DroneState_Type::Standard)
 		, socketName(NAME_None)
 		, orbitalCenter(nullptr)
-		, followCenterSpeed(100.0f)
 		, rotationSpeed(10.0f)
 		, rotationRadius(10.0f)
 	{
@@ -61,15 +57,6 @@ public:
 	ADroneContainer();
 
 protected:
-#pragma region Follow Position
-	UPROPERTY()
-	class UStaticMeshComponent* _targetOrbitalCenter = nullptr;
-
-	TMap<int32, FOrbitalCenterData> _orbitalCenterDataMap = TMap<int32, FOrbitalCenterData>();
-
-	int32 _currentDroneMode = 0;
-#pragma endregion
-
 #pragma region Drone Core
 	UPROPERTY()
 	UStaticMeshComponent* _droneCore = nullptr;
@@ -78,12 +65,31 @@ protected:
 	float _coreRotationSpeed = 10.0f;
 #pragma endregion
 
-#pragma region Orbital
+#pragma region Center
 	UPROPERTY()
 	UStaticMeshComponent* _orbitalCenter = nullptr;
 
-	float _followCenterSpeed = 100.0f;
+	class UStaticMeshComponent* _targetOrbitalCenter = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center")
+	float _centerMoveSpeed = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center")
+	float _centerRotateSpeed = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center")
+	float _arriveRange = 10.0f;
+
+	float _sqrArriveRange;
+
+	TMap<int32, FOrbitalCenterData> _orbitalCenterDataMap = TMap<int32, FOrbitalCenterData>();
+
+#pragma endregion
+
+#pragma region Orbital
+	int32 _currentDroneMode = 0;
+
+	UPROPERTY()
 	float _standardAngle = 0.0f;
 
 	UPROPERTY()

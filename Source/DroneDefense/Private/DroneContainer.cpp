@@ -17,6 +17,7 @@ void ADroneContainer::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	_sqrArriveRange = FMath::Pow(_arriveRange, 2);
 }
 
 // Called every frame
@@ -26,6 +27,9 @@ void ADroneContainer::Tick(float DeltaTime)
 
 	_droneCore->AddWorldRotation(FRotator(0.0f, -_coreRotationSpeed * DeltaTime, 0.0f));
 	
+	UStaticMeshComponent* _horizontalCenter = _orbitalCenterDataMap.FindRef((int32)E_DroneState_Type::Horizontal).orbitalCenter;
+	DrawDebugSphere(GetWorld(), _horizontalCenter->GetComponentLocation(), 30.0f, 16, FColor::Red, false, DeltaTime * 2.0f);
+
 	UpdateCenterPosition();
 
 	// Orbital Rotation
@@ -87,7 +91,6 @@ void ADroneContainer::ChangeDroneMode()
 	{
 		FOrbitalCenterData _orbitalCenterData = _orbitalCenterDataMap.FindRef(_currentDroneMode);
 		_targetOrbitalCenter = _orbitalCenterData.orbitalCenter;
-		_followCenterSpeed = _orbitalCenterData.followCenterSpeed;
 		_rotationSpeed = _orbitalCenterData.rotationSpeed;
 		_rotationRadius = _orbitalCenterData.rotationRadius;
 		UpdateOrbitalPositions();
@@ -135,11 +138,23 @@ void ADroneContainer::UpdateCenterPosition()
 		return;
 	}
 
-	float _lerpRate = GetWorld()->GetDeltaSeconds() * _followCenterSpeed;
+	DrawDebugSphere(GetWorld(), _targetOrbitalCenter->GetComponentLocation(), 25.0f, 16, FColor::Yellow, false, GetWorld()->GetDeltaSeconds() * 2.0f);
+
+	float _deltaTime = GetWorld()->GetDeltaSeconds();
 
 	// 위치
-	FVector _nextLocation = FMath::Lerp(GetActorLocation(), _targetOrbitalCenter->GetComponentLocation(), _lerpRate);
+	FVector _nextLocation = FVector::Zero();
+	FVector _toCenter = (_targetOrbitalCenter->GetComponentLocation() - GetActorLocation());
+	if (_toCenter.SquaredLength() <= _sqrArriveRange)
+	{
+		_nextLocation = _targetOrbitalCenter->GetComponentLocation();
+	}
+	else
+	{
+		_nextLocation = GetActorLocation() + _toCenter.GetSafeNormal() * _centerMoveSpeed * _deltaTime;
+	}
 	SetActorLocation(_nextLocation);
+	DrawDebugSphere(GetWorld(), _nextLocation, 20.0f, 16, FColor::Green, false, GetWorld()->GetDeltaSeconds() * 2.0f);
 
 	// 회전
 	FRotator _nextRotator = _targetOrbitalCenter->GetComponentRotation();
@@ -151,7 +166,16 @@ void ADroneContainer::UpdateCenterPosition()
 		_nextRotator = _rotationMatrix.Rotator();
 	}
 
-	FRotator _nextRotation = FMath::Lerp(GetActorRotation(), _nextRotator, _lerpRate);
+	FRotator _currentRotation = GetActorRotation();
+	FRotator _rotationDelta = (_nextRotator - _currentRotation).GetNormalized();
+	float _maxRotationRate = _centerRotateSpeed * _deltaTime; // _centerRotateSpeed 적용
+	
+	// 각 축별로 회전 속도 제한 적용
+	_rotationDelta.Pitch = FMath::Clamp(_rotationDelta.Pitch, -_maxRotationRate, _maxRotationRate);
+	_rotationDelta.Yaw = FMath::Clamp(_rotationDelta.Yaw, -_maxRotationRate, _maxRotationRate);
+	_rotationDelta.Roll = FMath::Clamp(_rotationDelta.Roll, -_maxRotationRate, _maxRotationRate);
+	
+	FRotator _nextRotation = _currentRotation + _rotationDelta;
 	SetActorRotation(_nextRotation);
 }
 
