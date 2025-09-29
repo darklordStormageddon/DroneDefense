@@ -57,6 +57,9 @@ public:
 	ADroneContainer();
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Debug")
+	bool _isDebugDraw = false;
+
 #pragma region Drone Core
 	UPROPERTY()
 	UStaticMeshComponent* _droneCore = nullptr;
@@ -109,6 +112,16 @@ protected:
 
 	UPROPERTY()
 	TMap<int32, class ADroneBase*> _droneMap;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Drone|Standard Attack")
+	float _standardAttackRange = 300.0f;
+
+	float _sqrStandardAttackRange = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Drone|Standard Attack")
+	float _fireCycleInterval = 1.0f;
+
+	float _leftCycleInterval = 0.0f;
 #pragma endregion
 
 public:
@@ -142,4 +155,8 @@ protected:
 	void UpdateOrbitalPositions();
 
 	UStaticMeshComponent* CreateStaticMeshComponent(UStaticMeshComponent* Parent);
+
+	void FireStandardAttack(class AEnemyBase* SearchedTarget);
+
+	class AEnemyBase* SearchTarget();
 };

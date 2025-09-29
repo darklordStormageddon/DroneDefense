@@ -3,6 +3,8 @@
 
 #include "DroneContainer.h"
 #include "DroneBase.h"
+#include "EnemyBase.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ADroneContainer::ADroneContainer()
@@ -18,6 +20,7 @@ void ADroneContainer::BeginPlay()
 	Super::BeginPlay();
 	
 	_sqrArriveRange = FMath::Pow(_arriveRange, 2);
+	_sqrStandardAttackRange = FMath::Pow(_standardAttackRange, 2);
 }
 
 // Called every frame
@@ -26,9 +29,6 @@ void ADroneContainer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	_droneCore->AddWorldRotation(FRotator(0.0f, -_coreRotationSpeed * DeltaTime, 0.0f));
-	
-	UStaticMeshComponent* _horizontalCenter = _orbitalCenterDataMap.FindRef((int32)E_DroneState_Type::Horizontal).orbitalCenter;
-	DrawDebugSphere(GetWorld(), _horizontalCenter->GetComponentLocation(), 30.0f, 16, FColor::Red, false, DeltaTime * 2.0f);
 
 	UpdateCenterPosition();
 
@@ -45,8 +45,28 @@ void ADroneContainer::Tick(float DeltaTime)
 	{
 		if (ADroneBase* _drone = _droneMap.FindRef(i))
 		{
-			_drone->SetTargetPosition(_droneOrbitalArray[i]->GetComponentLocation(), _forwardRotator);
+			_drone->SetOrbitalPosition(_droneOrbitalArray[i]->GetComponentLocation(), _forwardRotator);
 		}
+	}
+
+	// Standard Attack Delay
+	if (_leftCycleInterval > 0.0f)
+	{
+		_leftCycleInterval -= DeltaTime;
+	}
+	else if (_currentDroneMode == (int32)E_DroneState_Type::Standard)
+	{
+		AEnemyBase* _enemy = SearchTarget();
+		if (_enemy)
+		{
+			FireStandardAttack(_enemy);
+			_leftCycleInterval = _fireCycleInterval;
+		}
+	}
+
+	if (_isDebugDraw && _currentDroneMode == (int32)E_DroneState_Type::Standard)
+	{
+		DrawDebugSphere(GetWorld(), GetActorLocation(), _standardAttackRange, 16, FColor::Red, false, DeltaTime * 1.01f);
 	}
 }
 
@@ -138,8 +158,6 @@ void ADroneContainer::UpdateCenterPosition()
 		return;
 	}
 
-	DrawDebugSphere(GetWorld(), _targetOrbitalCenter->GetComponentLocation(), 25.0f, 16, FColor::Yellow, false, GetWorld()->GetDeltaSeconds() * 2.0f);
-
 	float _deltaTime = GetWorld()->GetDeltaSeconds();
 
 	// 위치
@@ -154,7 +172,6 @@ void ADroneContainer::UpdateCenterPosition()
 		_nextLocation = GetActorLocation() + _toCenter.GetSafeNormal() * _centerMoveSpeed * _deltaTime;
 	}
 	SetActorLocation(_nextLocation);
-	DrawDebugSphere(GetWorld(), _nextLocation, 20.0f, 16, FColor::Green, false, GetWorld()->GetDeltaSeconds() * 2.0f);
 
 	// 회전
 	FRotator _nextRotator = _targetOrbitalCenter->GetComponentRotation();
@@ -259,4 +276,93 @@ UStaticMeshComponent* ADroneContainer::CreateStaticMeshComponent(UStaticMeshComp
 		UE_LOG(LogTemp, Error, TEXT("CreateStaticMeshComponent: Failed to create new component"));
 		return nullptr;
 	}
+}
+
+void ADroneContainer::FireStandardAttack(AEnemyBase* SearchedTarget)
+{
+	int _droneCount = _droneOrbitalArray.Num();
+	float _fireEachInterval = _fireCycleInterval / _droneCount;
+
+	// 0 ~ _droneCount - 1 사이의 수를 랜덤 순서로 배열 생성
+	TArray<int> _randomArray;
+	for (int32 i = 0; i < _droneCount; i++)
+	{
+		_randomArray.Add(i);
+	}
+	for (int32 i = 0; i < _droneCount - 1; i++)
+	{
+		int32 _swapIdx = FMath::RandRange(i, _droneCount - 1);
+		if (i != _swapIdx)
+		{
+			_randomArray.Swap(i, _swapIdx);
+		}
+	}
+
+	for (int32 i = 0; i < _droneCount; i++)
+	{
+		if (ADroneBase* _drone = _droneMap.FindRef(_randomArray[i]))
+		{
+			// 각 드론마다 고유한 타이머 핸들 생성
+			FTimerHandle _droneTimerHandle;
+			
+			// 람다에서 사용할 드론과 타겟을 캡처
+			ADroneBase* _capturedDrone = _drone;
+			AEnemyBase* _capturedTarget = SearchedTarget;
+			
+			// 타이머 설정
+			FTimerDelegate _timerDelegate;
+			_timerDelegate.BindLambda([_capturedDrone, _capturedTarget]() {
+				if (_capturedDrone && _capturedTarget)
+				{
+					_capturedDrone->FireStandardAttack(_capturedTarget);
+				}
+			});
+			
+			if (i == 0)
+			{
+				_capturedDrone->FireStandardAttack(_capturedTarget);
+			}
+			else
+			{
+				GetWorld()->GetTimerManager().SetTimer(
+					_droneTimerHandle,
+					_timerDelegate,
+					_fireEachInterval * i,
+					false);
+			}
+		}
+	}
+}
+
+AEnemyBase* ADroneContainer::SearchTarget()
+{
+	// 적 배열 가져오기
+	TArray<AActor*> _foundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), _foundActors);
+
+	if (_foundActors.Num() <= 0)
+	{
+		// 적이 없으면 타겟 초기화
+		return nullptr;
+	}
+
+	float _closestDistanceSqr = FLT_MAX;
+	AEnemyBase* _closestEnemy = nullptr;
+
+	for (AActor* _actor : _foundActors)
+	{
+		AEnemyBase* _enemy = Cast<AEnemyBase>(_actor);
+		if (!_enemy)
+			continue;
+
+		float _distanceSqr = FVector::DistSquared(GetActorLocation(), _enemy->GetActorLocation());
+
+		if (_distanceSqr <= _sqrStandardAttackRange && _distanceSqr < _closestDistanceSqr)
+		{
+			_closestDistanceSqr = _distanceSqr;
+			_closestEnemy = _enemy;
+		}
+	}
+
+	return _closestEnemy;
 }
