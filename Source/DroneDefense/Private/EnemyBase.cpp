@@ -4,7 +4,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "WaveManager.h"
-
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -42,7 +42,7 @@ void AEnemyBase::BeginPlay()
 
 void AEnemyBase::CalculateValue()
 {
-    Monster_Value = Max_HP + Attack + Defense*5 + Speed/100;
+    Monster_Value = Max_HP + Attack + Defense * 5 + Speed / 100;
 }
 
 void AEnemyBase::InitializeEnemy(AWaveManager* myown)
@@ -86,18 +86,19 @@ bool AEnemyBase::TakeDamage_Implementation(float Damage)
 
 void AEnemyBase::ToggleClose()
 {
-     GotClose.Broadcast();
+    GotClose.Broadcast();
 }
 
 void AEnemyBase::ToggleHit()
 {
     GotHit.Broadcast();
-}
+};
 
 float AEnemyBase::SpawnWait()
-{
+{   
     BossWait = true;
-    Speed = 0;
+    GetCharacterMovement()->MaxWalkSpeed = 0.f;
     Timer = 0;
+
     return 5.0f;
 }

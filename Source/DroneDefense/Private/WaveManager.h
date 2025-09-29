@@ -122,6 +122,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
     int TotalMonster;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
-    int SpawnMonsterAdd;
+    TArray<AEnemyBase*> SpawnedEnemies;
 };
