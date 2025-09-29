@@ -32,12 +32,13 @@ protected:
 
 	float _currentRotateSpeed = 0.0f;
 
-	float _damage = 10.0f;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Movement")
 	float _arriveRange = 100.0;
 
 	float _sqrArriveRange = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Attack")
+	float _damage = 10.0f;
 
 	UParticleSystemComponent* _particleOnHit = nullptr;
 

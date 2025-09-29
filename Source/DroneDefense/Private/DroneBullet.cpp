@@ -69,6 +69,7 @@ void ADroneBullet::MoveToTarget()
 		{
 			_particleOnHit->Activate();
 		}
+
 		Destroy();
 		return;
 	}
