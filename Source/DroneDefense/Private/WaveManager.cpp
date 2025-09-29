@@ -111,7 +111,6 @@ void AWaveManager::SpawnMonster()
 
                     SpawnedEnemies.Add(Enemy);
 
-                    UE_LOG(LogTemp, Warning, TEXT("%d"), SpawnedEnemies.Num())
                     if ((SpawnedEnemies.Num() == TotalMonster) && (CurrentWave % 5 == 0))
                         BossSpawner();
 
@@ -128,8 +127,6 @@ void AWaveManager::SpawnMonster()
 
         if (index == 0)
         {
-            UE_LOG(LogTemp, Warning, TEXT("%d"), index)
-
                 FVector SpawnLoc = SpawnPosition();
             FRotator SpawnRot = FRotator::ZeroRotator;
 
@@ -378,28 +375,4 @@ void AWaveManager::ShakeMonsterList()
             UE_LOG(LogTemp, Warning, TEXT("MonsterClassCheckInWave [%s] : %d"), *ClassName, MonsterClassCheckInWave[Keys[i]]);
         }
     }
-}
-
-
-// 몬스터 클래스별 값을 출력해서 테스트 하는 함수(디버깅용)
-void AWaveManager::PrintMonsterClassValues()
-{
-    for (auto& Elem : MonsterClassValues)
-    {
-        UClass* MonsterUClass = Elem.Key; // tsubclassof -> uclass*
-        int value = Elem.Value;
-
-        if (MonsterUClass)
-        {
-            FString classname = MonsterUClass->GetName(); // UClass* -> FString
-            UE_LOG(LogTemp, Warning, TEXT("monster class: %s, value: %d"), *classname, value);
-
-            //   화면에 출력
-            if (GEngine)
-            {
-                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, classname + " value: " + FString::FromInt(value));
-            }
-        }
-    }
-
 }
