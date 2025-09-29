@@ -51,9 +51,8 @@ void APlayerBase::GenerateDroneContainer()
 			UStaticMeshComponent* _foundComponent = FindComponentBySocketName(_orbitalCenterDataArray[i].socketName);
 			if (_foundComponent)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Found component: %s, %f"), *_foundComponent->GetName(), _orbitalCenterDataArray[i].followCenterSpeed);
 				_orbitalCenterDataArray[i].orbitalCenter = _foundComponent;
-			}	
+			}
 		}
 	}
 	
