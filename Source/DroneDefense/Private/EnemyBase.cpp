@@ -52,32 +52,42 @@ void AEnemyBase::InitializeEnemy(AWaveManager* myown)
 
 void AEnemyBase::DestroySelf()
 {
+    if (IsPendingKill())
+    {
+        return; // 이미 파괴 중
+    }
+
     // MonsterDeath 호출
     if (WaveManagerActor)
     {
         WaveManagerActor->MonsterDeath();
     }
-
-    if (!GetWorldTimerManager().IsTimerActive(DestroyTimerHandle))
-        GetWorldTimerManager().SetTimer(DestroyTimerHandle, [this]()
-            {
-                Destroy();
+    GetWorldTimerManager().SetTimer(DestroyTimerHandle, [this]()
+        {Destroy();
             }, 2.0f, false);
 }
 
 bool AEnemyBase::TakeDamage_Implementation(float Damage)
 {
+    if (!IsValid(this))
+    {
+        return false;
+    }
+
     if (HP <= 0)
         return false;
 
-    if (Damage > Defense)
+    if (Damage > (Defense + 1))
     {
         HP -= Damage - Defense;
+    }
+    else
+    {
+        HP -= 1;
     }
 
     if (HP <= 0)
     {
-
         DestroySelf();
     }
 
@@ -103,5 +113,5 @@ void AEnemyBase::SpawnWait()
 
 void AEnemyBase::RollBackSpeed()
 {
-	GetCharacterMovement()->MaxWalkSpeed = Speed * 100.f;
+	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
