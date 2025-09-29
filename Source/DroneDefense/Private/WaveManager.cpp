@@ -157,16 +157,25 @@ void AWaveManager::BossSpawner()
     FRotator SpawnRot = FRotator::ZeroRotator;
     FTimerHandle TimeHandle;
 
-    int BossHave = BossClass.Num();
 
+
+    int BossHave = BossClass.Num();
+    
     //<< --- LevelSequence Spawn Pos  
     if (CurrentWave / 5 < BossHave + 1)
     {
-        Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave / 5 - 1], SpawnLoc, SpawnRot);
+
+        Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave / 5 - 1]
+            , SpawnLoc, SpawnRot);//보스 몬스터 스폰
+        SpawnedEnemies.Add(Enemy);//보스를 스폰된 몬스터 배열에 추가
+
+        Enemy -> SetActorHiddenInGame(true);
+
+        float BS_Delay = Enemy->Boss_Spawn_Delay;//보스 스폰 딜레이
 
         BossSpawnBool = true;
-        
-        //모든 스폰 된 몬스터들에게 spawnWait 함수를 호출해서 속도 0, 공속 0을 부여함
+
+        //모든 스폰 된 몬스터들에게 spawnWait 함수를 호출해서 속도 0, hit timer = 0으로 설정
         for (int index = 0; index < SpawnedEnemies.Num(); index++)
         {
             if(SpawnedEnemies[index])
@@ -181,12 +190,14 @@ void AWaveManager::BossSpawner()
                     for (int index = 0; index < SpawnedEnemies.Num(); index++)
                     {
                         if (SpawnedEnemies[index])
+                        {
                             SpawnedEnemies[index]->BossWait = false;
+                            SpawnedEnemies[index]->RollBackSpeed();
+                        }
                     }
-                    SpawnedEnemies.Add(Enemy);
+                    Enemy->SetActorHiddenInGame(false);
                 })
-            ,
-            Enemy->SpawnWait(),
+            ,BS_Delay,
             false
         );
     }

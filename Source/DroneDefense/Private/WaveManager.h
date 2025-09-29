@@ -67,7 +67,6 @@ protected:
     void LowStairLevel();
 
     UFUNCTION(BlueprintCallable, Category = "Value Check Debug")
-    void PrintMonsterClassValues();
 
     void SpawnMonsterValueInWave();
 
