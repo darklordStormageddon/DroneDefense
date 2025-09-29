@@ -30,22 +30,22 @@ void AWaveManager::InitWaveStartEnd(int start, int end)
     CurrentWave = StartWave;
 }
 
-void AWaveManager::WaveStart() {WaveStart(CurrentWave); }
+void AWaveManager::WaveStart() { WaveStart(CurrentWave); }
 
 // 웨이브 시작, 끝 함수
 void AWaveManager::WaveStart(int Wave)
 {
+    FTimerHandle TempHandle;
     AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
     CurrentWave = Wave;
-    
+
     if (_playerController)
         _playerController->ChangeWave(CurrentWave);
 
     // Monster Number Init
     TotalMonster = 0;
-    SpawnMonsterAdd = 0;
-    BossSpawnBool = false;
+    SpawnedEnemies.Empty();
 
     // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
     WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
@@ -56,7 +56,6 @@ void AWaveManager::WaveStart(int Wave)
     _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
 
     SpawnMonster();
-
     
 }
 
@@ -90,7 +89,6 @@ void AWaveManager::SpawnMonster()
         float DelayTime = index * SpawnDelay;
         FTimerHandle TempHandle;
         FTimerDelegate Delegate;
-
         // 지연 시간 설정: index * SpawnDelay
 
 
@@ -99,7 +97,7 @@ void AWaveManager::SpawnMonster()
                 /*UE_LOG(LogTemp, Warning, TEXT("%d"), index)*/
                 if (MonsterClassInWave.IsValidIndex(index))
                 {
-                    
+
                     FVector SpawnLoc = SpawnPosition();
                     FRotator SpawnRot = FRotator::ZeroRotator;
 
@@ -111,10 +109,12 @@ void AWaveManager::SpawnMonster()
 
                     Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
 
-                    SpawnMonsterAdd++;
-                    
-                    if ((SpawnMonsterAdd == TotalMonster - 1) && (CurrentWave % 5 == 0))
+                    SpawnedEnemies.Add(Enemy);
+
+                    UE_LOG(LogTemp, Warning, TEXT("%d"), SpawnedEnemies.Num())
+                    if ((SpawnedEnemies.Num() == TotalMonster) && (CurrentWave % 5 == 0))
                         BossSpawner();
+
                     /*
                     UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
                     UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
@@ -124,13 +124,13 @@ void AWaveManager::SpawnMonster()
                         Enemy->InitializeEnemy(this);
                     }
                 }
-         });
+            });
 
         if (index == 0)
         {
             UE_LOG(LogTemp, Warning, TEXT("%d"), index)
 
-            FVector SpawnLoc = SpawnPosition();
+                FVector SpawnLoc = SpawnPosition();
             FRotator SpawnRot = FRotator::ZeroRotator;
 
             FActorSpawnParameters SpawnParams;
@@ -140,39 +140,58 @@ void AWaveManager::SpawnMonster()
                 ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
             Enemy = GetWorld()->SpawnActor<AEnemyBase>(MonsterClassInWave[index], SpawnLoc, SpawnRot, SpawnParams);
-            SpawnMonsterAdd++;
+            SpawnedEnemies.Add(Enemy);
 
             //UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
             //UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
         }
         else
-           GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, DelayTime, false);
-            // 타이머 설정
-
-            // 타이머 설정
+            GetWorld()->GetTimerManager().SetTimer(TempHandle, Delegate, DelayTime, false);
+        // 타이머 설정
+        
+        // 타이머 설정
     }
-    
+
 }
 
 void AWaveManager::BossSpawner()
 {
     FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
+    FTimerHandle TimeHandle;
 
     int BossHave = BossClass.Num();
 
     //<< --- LevelSequence Spawn Pos  
     if (CurrentWave / 5 < BossHave + 1)
     {
-        float BossSpawnLogic = (float)SpawnMonsterAdd / (float)(TotalMonster - 1) * 100.0f;
+        Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave / 5 - 1], SpawnLoc, SpawnRot);
 
-        if (BossSpawnBool == false && BossSpawnLogic >= BossSpawnPercent)
+        BossSpawnBool = true;
+        
+        //모든 스폰 된 몬스터들에게 spawnWait 함수를 호출해서 속도 0, 공속 0을 부여함
+        for (int index = 0; index < SpawnedEnemies.Num(); index++)
         {
-            Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave / 5 - 1], SpawnLoc, SpawnRot);
-            SpawnMonsterAdd++;
-
-            BossSpawnBool = true;
+            if(SpawnedEnemies[index])
+               SpawnedEnemies[index]->SpawnWait();
         }
+
+        //Bossdelay후 모든 몬스터에 bool변수인 BossWait을 false로 만들어줌
+        GetWorld()->GetTimerManager().SetTimer(
+            TimeHandle,
+            FTimerDelegate::CreateLambda([this]()
+                {
+                    for (int index = 0; index < SpawnedEnemies.Num(); index++)
+                    {
+                        if (SpawnedEnemies[index])
+                            SpawnedEnemies[index]->BossWait = false;
+                    }
+                    SpawnedEnemies.Add(Enemy);
+                })
+            ,
+            Enemy->SpawnWait(),
+            false
+        );
     }
 }
 
@@ -196,9 +215,7 @@ FVector AWaveManager::SpawnPosition()
         ResultPos = WestPos->GetActorLocation();
         break;
     }
-
     return ResultPos;
-
 }
 
 
@@ -225,7 +242,7 @@ void AWaveManager::BringMonsterValue()
         }
         SpawnedActor->Destroy();
     }
-    if(MonsterClass.Num() > 1)
+    if (MonsterClass.Num() > 1)
         LowStairLevel();
 }
 
@@ -237,6 +254,7 @@ void AWaveManager::LowStairLevel()
         {
             return A.Value > B.Value; // 오름차순 정렬
         });
+
     MonsterClassValues.Empty();
     for (const auto& Pair : PairArray)
     {
@@ -252,7 +270,7 @@ void AWaveManager::LowStairLevel()
 void AWaveManager::SpawnMonsterValueInWave()
 {
     int NonSpawnCheck = 0;
-    
+
     if (CurrentWave % 5 == 0)
         TotalMonster++;//Boss
 
@@ -383,5 +401,5 @@ void AWaveManager::PrintMonsterClassValues()
             }
         }
     }
-    
+
 }
