@@ -56,10 +56,17 @@ void ADroneBase::InitializeDrone(ADroneContainer* DroneContainer)
 	_droneContainer = DroneContainer;
 }
 
-void ADroneBase::CachAttackParticle(UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle)
+void ADroneBase::CachAttackParticle(UParticleSystemComponent* StadardAttackParticle, UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle)
 {
+	_particleStandardAttack = StadardAttackParticle;
 	_particleTracingAttack = TracingAttackParticle;
 	_particleHorizontalAttack = HorizontalAttackParticle;
+
+	if (_particleStandardAttack)
+	{
+		_particleStandardAttack->DeactivateImmediate();
+	}
+
 	if (_particleTracingAttack)
 	{
 		_particleTracingAttack->DeactivateImmediate();
@@ -76,17 +83,37 @@ void ADroneBase::ChangeDroneMode(int32 DroneMode)
 	_droneMode = DroneMode;
 	if (_droneMode == (int32)E_DroneState_Type::Tracing)
 	{
-		SearchTarget();
+		_target = SearchTarget();
 	}
 }
 
-void ADroneBase::SetTargetPosition(FVector TargetLocation, FRotator TargetRotator)
+void ADroneBase::SetOrbitalPosition(FVector TargetLocation, FRotator TargetRotator)
 {
 	_targetLocation = TargetLocation;
 	_targetRotator = TargetRotator;
 }
 
-void ADroneBase::SearchTarget()
+void ADroneBase::FireStandardAttack(AEnemyBase* TearchedTarget)
+{
+	if (!_bulletClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FireStandardAttack: _bulletClass is null"));
+		return;
+	}
+	
+	ADroneBullet* _bullet = GetWorld()->SpawnActor<ADroneBullet>(_bulletClass.Get(), GetActorLocation(), GetActorRotation());
+	if (_bullet)
+	{
+		_bullet->InitializeBullet(SearchTarget());
+		if (_particleStandardAttack)
+		{
+			_particleStandardAttack->DeactivateImmediate();
+			_particleStandardAttack->Activate();
+		}
+	}
+}
+
+AEnemyBase* ADroneBase::SearchTarget()
 {
 	// 적 배열 가져오기
 	TArray<AActor*> _foundActors;
@@ -95,8 +122,7 @@ void ADroneBase::SearchTarget()
 	if (_foundActors.Num() <= 0)
 	{
 		// 적이 없으면 타겟 초기화
-		_target = nullptr;
-		return;
+		return nullptr;
 	}
 	
 	float _closestDistanceSqr = FLT_MAX;
@@ -117,14 +143,14 @@ void ADroneBase::SearchTarget()
 		}
 	}
 	
-	_target = _closestEnemy;
+	return _closestEnemy;
 }
 
 bool ADroneBase::TryTracing()
 {
 	if (!_target.IsValid())
 	{
-		SearchTarget();
+		_target = SearchTarget();
 	}
 
 	if (!_target.IsValid())
@@ -190,7 +216,6 @@ void ADroneBase::Tracing(FVector TargetLocation, float TargetRotationSpeed)
 
 	// 전진
 	SetActorLocation(_currentPosition + _forward * _moveSpeed * _deltaTime);
-	
 }
 
 void ADroneBase::RotateOrbital(float DeltaTime)
