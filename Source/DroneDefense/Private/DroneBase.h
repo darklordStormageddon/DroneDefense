@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "EnemyBase.h"
+#include "DroneBullet.h"
 #include "DroneBase.generated.h"
 
 UCLASS()
@@ -69,9 +70,23 @@ protected:
 #pragma endregion
 
 #pragma region Attack
+	UParticleSystemComponent* _particleStandardAttack = nullptr;
+
 	UParticleSystemComponent* _particleTracingAttack = nullptr;
 
 	UParticleSystemComponent* _particleHorizontalAttack = nullptr;
+
+	// Standard Attack
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Standard")
+	float _attackStandardRange = 500.0f;
+
+	float _sqrAttackStandardRange = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Standard")
+	TSubclassOf<ADroneBullet> _bulletClass = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Standard")
+	float _attackStandardDelay = 1.0f;
 
 	// Tracing Attack
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Attack|Tracing")
@@ -110,13 +125,15 @@ public:
 
 	void ChangeDroneMode(int32 DroneMode);
 
-	void SetTargetPosition(FVector TargetLocation, FRotator TargetRotator);
+	void SetOrbitalPosition(FVector TargetLocation, FRotator TargetRotator);
+
+	void FireStandardAttack(AEnemyBase* TearchedTarget);
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	void CachAttackParticle(UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle);
+	void CachAttackParticle(UParticleSystemComponent* StadardAttackParticle, UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle);
 
-	void SearchTarget();
+	AEnemyBase* SearchTarget();
 
 	bool TryTracing();
 
