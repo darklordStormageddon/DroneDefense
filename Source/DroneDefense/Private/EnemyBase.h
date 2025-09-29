@@ -92,6 +92,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
 	void ToggleHit();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events")
+
+	float Boss_Spawn_Delay = 12.f; //보스 스폰 딜레이
+
 private:
 	FTimerHandle DestroyTimerHandle;
 
@@ -102,6 +106,9 @@ public:
 	bool TakeDamage(float Damage);
 	virtual bool TakeDamage_Implementation(float Damage);
 
-	float SpawnWait();
+	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
+	void SpawnWait();
 
+	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
+	void RollBackSpeed();
 };

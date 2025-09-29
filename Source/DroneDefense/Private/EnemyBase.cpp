@@ -94,11 +94,14 @@ void AEnemyBase::ToggleHit()
     GotHit.Broadcast();
 };
 
-float AEnemyBase::SpawnWait()
+void AEnemyBase::SpawnWait()
 {   
     BossWait = true;
     GetCharacterMovement()->MaxWalkSpeed = 0.f;
     Timer = 0;
+}
 
-    return 5.0f;
+void AEnemyBase::RollBackSpeed()
+{
+	GetCharacterMovement()->MaxWalkSpeed = Speed * 100.f;
 }
