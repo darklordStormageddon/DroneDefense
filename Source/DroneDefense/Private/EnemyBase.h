@@ -66,6 +66,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events")
 	bool Dead;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events")
+	float Timer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events")
+	bool BossWait;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster|Events", meta = (ExposeOnSpawn = true))
 	AActor* Nexus;
 
@@ -96,5 +102,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster|Events")
 	bool TakeDamage(float Damage);
 	virtual bool TakeDamage_Implementation(float Damage);
+
+	UFUNCTION(BlueprintCallable, Category = "Monster|Events")
+	float SpawnWait();
 
 };

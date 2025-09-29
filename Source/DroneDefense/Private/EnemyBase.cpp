@@ -92,4 +92,12 @@ void AEnemyBase::ToggleClose()
 void AEnemyBase::ToggleHit()
 {
     GotHit.Broadcast();
-};
+}
+
+float AEnemyBase::SpawnWait()
+{
+    BossWait = true;
+    Speed = 0;
+    Timer = 0;
+    return 5.0f;
+}
