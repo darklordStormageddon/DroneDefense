@@ -114,7 +114,7 @@ public:
     UPROPERTY(BlueprintReadOnly, Category = "Wave Control")
     int BossPercentUI = BossSpawnPercent;
 
-    void BeginWaveStart();
+    void WaveStart();
 
     void InitWaveStartEnd(int start, int end);
 

@@ -35,7 +35,7 @@ void AWaveManager::InitWaveStartEnd(int start, int end)
     UE_LOG(LogTemp, Warning, TEXT("Wave Manager Initialized - Start Wave: %d, Max Wave: %d"), StartWave, EndWave);
 }
 
-void AWaveManager::BeginWaveStart() { WaveStart(CurrentWave); }
+void AWaveManager::WaveStart() {WaveStart(CurrentWave); }
 
 // 웨이브 시작, 끝 함수
 void AWaveManager::WaveStart(int Wave)

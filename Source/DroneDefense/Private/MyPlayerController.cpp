@@ -33,7 +33,35 @@ void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
     // 웨이브 매니저에 시작 웨이브와 종료 웨이브 값 전달
     _waveManager->InitWaveStartEnd(_startWave, _endWave);
 
-    // 타이머 설정하여 지연 후 StartPlay 호출
+    // _startWave 웨이브 시작
+    StartNextWave();
+}
+
+void AMyPlayerController::OnWaveEnd(bool IsGameEnd)
+{
+    if (IsGameEnd)
+    {
+        // TODO : Result UI 호출
+    }
+    else
+    {
+        // TODO : 웨이브 UI 호출
+        StartNextWave();
+    }
+}
+
+void AMyPlayerController::StartPlay_Implementation()
+{
+    _waveManager->WaveStart();
+}
+
+void AMyPlayerController::GameOver()
+{
+    _waveManager->SpawnEnd();
+}
+
+void AMyPlayerController::StartNextWave()
+{
     GetWorld()->GetTimerManager().SetTimer(
         _startDelayTimerHandle,
         this,
@@ -41,14 +69,4 @@ void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
         _startDelay,
         false
     );
-}
-
-void AMyPlayerController::StartPlay_Implementation()
-{
-    _waveManager->BeginWaveStart();
-}
-
-void AMyPlayerController::GameOver()
-{
-    _waveManager->SpawnEnd();
 }

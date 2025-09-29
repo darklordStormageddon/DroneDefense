@@ -42,10 +42,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	void ChangeEnemyCount(int LeftEnemyCount, int TotalEnemyCount);
 
+	void OnWaveEnd(bool IsGameEnd);
+
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
 	void StartPlay();
 	virtual void StartPlay_Implementation();
 
-
+	void StartNextWave();
 };
