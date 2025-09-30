@@ -4,6 +4,8 @@
 #include "MyPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/GameInstance.h"
+#include "EnemyBase.h"
+#include "GameFramework/Actor.h"
 
 void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
 {
@@ -47,6 +49,55 @@ void AMyPlayerController::OnWaveEnd(bool IsGameEnd)
     {
         StartNextWave();
     }
+}
+
+AEnemyBase* AMyPlayerController::SearchTarget(UWorld* World, const FVector& Location, float SearchDistance)
+{
+    if (!World)
+        return nullptr;
+
+    // Sphere 범위 내의 액터만 탐색
+    TArray<FOverlapResult> _overlaps;
+    FCollisionQueryParams _queryParams;
+    
+    bool _bOverlap = World->OverlapMultiByObjectType(
+        _overlaps,
+        Location,
+        FQuat::Identity,
+        FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn),
+        FCollisionShape::MakeSphere(SearchDistance),
+        _queryParams
+    );
+
+    if (!_bOverlap)
+        return nullptr;
+
+    AEnemyBase* _closestEnemy = nullptr;
+    float _closestDistanceSqr = FLT_MAX;
+    for (const FOverlapResult& _result : _overlaps)
+    {
+        AEnemyBase* _enemy = Cast<AEnemyBase>(_result.GetActor());
+        if (!_enemy || _enemy->CheckIsAlreadyDied())
+            continue;
+
+        float _distanceSqr = FVector::DistSquared(Location, _enemy->GetActorLocation());
+        if (_distanceSqr <= FMath::Square(SearchDistance) && _distanceSqr < _closestDistanceSqr)
+        {
+            _closestDistanceSqr = _distanceSqr;
+            _closestEnemy = _enemy;
+        }
+    }
+    
+    return _closestEnemy;
+}
+
+AEnemyBase* AMyPlayerController::SearchTargetFromActor(AActor* SourceActor, float SearchDistance)
+{
+    if (!SourceActor)
+        return nullptr;
+        
+    UWorld* _world = SourceActor->GetWorld();
+    return SearchTarget(_world, SourceActor->GetActorLocation(), SearchDistance);
 }
 
 void AMyPlayerController::OnStartWave_Implementation()

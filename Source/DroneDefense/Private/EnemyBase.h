@@ -102,6 +102,8 @@ private:
 	AWaveManager* WaveManagerActor = nullptr;
 
 public:
+	bool CheckIsAlreadyDied();
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Monster|Events")
 	bool TakeDamage(float Damage);
 	virtual bool TakeDamage_Implementation(float Damage);

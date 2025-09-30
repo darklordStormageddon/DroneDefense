@@ -151,6 +151,4 @@ protected:
 	UStaticMeshComponent* CreateStaticMeshComponent(UStaticMeshComponent* Parent);
 
 	void FireStandardAttack(class AEnemyBase* SearchedTarget);
-
-	class AEnemyBase* SearchTarget();
 };
