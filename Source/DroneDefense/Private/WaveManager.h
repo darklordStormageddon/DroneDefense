@@ -20,10 +20,10 @@ private:
     UPROPERTY(EditAnywhere, Category = "Debug Spawn Setting")
     bool SpawnCheck = true;
 
-    bool BossSpawnBool = false;
-
     UPROPERTY(EditAnywhere, Category = "Boss Spawn Setting")
     int BossSpawnPercent;
+
+    void BossWaitEnd();
 
 protected:
     virtual void BeginPlay() override;
