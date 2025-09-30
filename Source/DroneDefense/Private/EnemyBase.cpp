@@ -67,6 +67,11 @@ void AEnemyBase::DestroySelf()
             }, 2.0f, false);
 }
 
+bool AEnemyBase::CheckIsAlreadyDied()
+{
+    return HP <= 0;
+}
+
 bool AEnemyBase::TakeDamage_Implementation(float Damage)
 {
     if (!IsValid(this))

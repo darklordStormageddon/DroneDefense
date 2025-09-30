@@ -5,6 +5,7 @@
 #include "DroneBase.h"
 #include "EnemyBase.h"
 #include "Kismet/GameplayStatics.h"
+#include <MyPlayerController.h>
 
 // Sets default values
 ADroneContainer::ADroneContainer()
@@ -55,7 +56,7 @@ void ADroneContainer::Tick(float DeltaTime)
 	}
 	else if (_currentDroneMode == (int32)E_DroneState_Type::Standard)
 	{
-		AEnemyBase* _enemy = SearchTarget();
+		AEnemyBase* _enemy = AMyPlayerController::SearchTarget(GetWorld(), GetActorLocation(), _standardAttackRange);
 		if (_enemy)
 		{
 			FireStandardAttack(_enemy);
@@ -319,37 +320,4 @@ void ADroneContainer::FireStandardAttack(AEnemyBase* SearchedTarget)
 			}
 		}
 	}
-}
-
-AEnemyBase* ADroneContainer::SearchTarget()
-{
-	// 적 배열 가져오기
-	TArray<AActor*> _foundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), _foundActors);
-
-	if (_foundActors.Num() <= 0)
-	{
-		// 적이 없으면 타겟 초기화
-		return nullptr;
-	}
-
-	float _closestDistanceSqr = FLT_MAX;
-	AEnemyBase* _closestEnemy = nullptr;
-
-	for (AActor* _actor : _foundActors)
-	{
-		AEnemyBase* _enemy = Cast<AEnemyBase>(_actor);
-		if (!_enemy)
-			continue;
-
-		float _distanceSqr = FVector::DistSquared(GetActorLocation(), _enemy->GetActorLocation());
-
-		if (_distanceSqr <= _sqrStandardAttackRange && _distanceSqr < _closestDistanceSqr)
-		{
-			_closestDistanceSqr = _distanceSqr;
-			_closestEnemy = _enemy;
-		}
-	}
-
-	return _closestEnemy;
 }

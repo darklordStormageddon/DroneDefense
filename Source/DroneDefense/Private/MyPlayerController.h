@@ -44,6 +44,25 @@ public:
 
 	void OnWaveEnd(bool IsGameEnd);
 
+	/**
+	 * 가장 가까운 적을 찾는 함수
+	 * @param World - 현재 월드 포인터
+	 * @param Location - 검색 시작 위치
+	 * @param SearchDistance - 검색 범위 (반경)
+	 * @return 가장 가까운 적 또는 nullptr
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Search Target")
+	static AEnemyBase* SearchTarget(UWorld* World, const FVector& Location, float SearchDistance);
+
+	/**
+	 * 특정 액터에서 가장 가까운 적을 찾는 함수
+	 * @param SourceActor - 검색 시작 액터
+	 * @param SearchDistance - 검색 범위 (반경)
+	 * @return 가장 가까운 적 또는 nullptr
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Search Target")
+	static AEnemyBase* SearchTargetFromActor(AActor* SourceActor, float SearchDistance);
+
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
 	void OnStartWave();

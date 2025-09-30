@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
 #include "Particles/ParticleSystemComponent.h"
+#include <MyPlayerController.h>
 
 // Sets default values
 ADroneBase::ADroneBase()
@@ -104,46 +105,13 @@ void ADroneBase::FireStandardAttack(AEnemyBase* TearchedTarget)
 	ADroneBullet* _bullet = GetWorld()->SpawnActor<ADroneBullet>(_bulletClass.Get(), GetActorLocation(), GetActorRotation());
 	if (_bullet)
 	{
-		_bullet->InitializeBullet(SearchTarget());
+		_bullet->InitializeBullet(TearchedTarget);
 		if (_particleStandardAttack)
 		{
 			_particleStandardAttack->DeactivateImmediate();
 			_particleStandardAttack->Activate();
 		}
 	}
-}
-
-AEnemyBase* ADroneBase::SearchTarget()
-{
-	// 적 배열 가져오기
-	TArray<AActor*> _foundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyBase::StaticClass(), _foundActors);
-	
-	if (_foundActors.Num() <= 0)
-	{
-		// 적이 없으면 타겟 초기화
-		return nullptr;
-	}
-	
-	float _closestDistanceSqr = FLT_MAX;
-	AEnemyBase* _closestEnemy = nullptr;
-	
-	for (AActor* _actor : _foundActors)
-	{
-		AEnemyBase* _enemy = Cast<AEnemyBase>(_actor);
-		if (!_enemy)
-			continue;
-			
-		float _distanceSqr = FVector::DistSquared(GetActorLocation(), _enemy->GetActorLocation());
-		
-		if (_distanceSqr <= _sqrSearchTargetRange && _distanceSqr < _closestDistanceSqr)
-		{
-			_closestDistanceSqr = _distanceSqr;
-			_closestEnemy = _enemy;
-		}
-	}
-	
-	return _closestEnemy;
 }
 
 bool ADroneBase::TryTracing()
@@ -303,6 +271,11 @@ void ADroneBase::Attack(float DeltaTime)
 	{
 		DrawDebugSphere(GetWorld(), GetActorLocation(), _attackRange, 16, FColor::Red, false, DeltaTime * 1.01f);
 	}
+}
+
+AEnemyBase* ADroneBase::SearchTarget()
+{
+	return AMyPlayerController::SearchTarget(GetWorld(), GetActorLocation(), _searchTargetRange);
 }
 
 TArray<AEnemyBase*> ADroneBase::SearchTarget(float SearchRange)

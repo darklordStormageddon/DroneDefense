@@ -133,8 +133,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void CachAttackParticle(UParticleSystemComponent* StadardAttackParticle, UParticleSystemComponent* TracingAttackParticle, UParticleSystemComponent* HorizontalAttackParticle);
 
-	AEnemyBase* SearchTarget();
-
 	bool TryTracing();
 
 	void Tracing(FVector TargetLocation, float TargetRotationSpeed);
@@ -142,6 +140,8 @@ protected:
 	void RotateOrbital(float DeltaTime);
 
 	void Attack(float DeltaTime);
+
+	AEnemyBase* SearchTarget();
 
 	TArray<AEnemyBase*> SearchTarget(float SearchRange);
 };
