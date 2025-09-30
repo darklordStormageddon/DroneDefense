@@ -133,7 +133,7 @@ void AWaveManager::SpawnMonster()
 
         if (index == 0)
         {
-                FVector SpawnLoc = SpawnPosition();
+            FVector SpawnLoc = SpawnPosition();
             FRotator SpawnRot = FRotator::ZeroRotator;
 
             FActorSpawnParameters SpawnParams;
@@ -161,7 +161,7 @@ void AWaveManager::BossSpawner()
 {
     FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
-    FTimerHandle TimeHandle;
+    
 
     int BossHave = BossClass.Num();
     
@@ -173,39 +173,34 @@ void AWaveManager::BossSpawner()
             , SpawnLoc, SpawnRot);//보스 몬스터 스폰
         SpawnedEnemies.Add(Enemy);//보스를 스폰된 몬스터 배열에 추가
 
-        Enemy -> SetActorHiddenInGame(true);
+        //Enemy -> SetActorHiddenInGame(true);
 
-        float BS_Delay = Enemy->Boss_Spawn_Delay;//보스 스폰 딜레이
-
-        BossSpawnBool = true;
-
+        //스타트 매개변수 보스 타임,연출 
+      
         //모든 스폰 된 몬스터들에게 spawnWait 함수를 호출해서 속도 0, hit timer = 0으로 설정
+
         for (int index = 0; index < SpawnedEnemies.Num(); index++)
         {
-            if(SpawnedEnemies[index])
-               SpawnedEnemies[index]->SpawnWait();
+            if (SpawnedEnemies[index])
+                SpawnedEnemies[index]->SpawnWait();
         }
-        //스타트 매개변수 보스 타임,연출 
-        
-        //Bossdelay후 모든 몬스터에 bool변수인 BossWait을 false로 만들어줌
-        GetWorld()->GetTimerManager().SetTimer(
-            TimeHandle,
-            FTimerDelegate::CreateLambda([this]()
-                {
-                    for (int index = 0; index < SpawnedEnemies.Num(); index++)
-                    {
-                        if (SpawnedEnemies[index])
-                        {
-                            SpawnedEnemies[index]->BossWait = false;
-                            SpawnedEnemies[index]->RollBackSpeed();
-                        }
-                    }
-                    Enemy->SetActorHiddenInGame(false);
-                })
-            ,BS_Delay,
-            false
-        );
+
+        // 플레이어 컨트롤러 호출 매소드
     }
+}
+
+// 플레이어 컨트롤러가 호출 해야 할 매소드
+void AWaveManager::BossWaitEnd()
+{
+    for (int index = 0; index < SpawnedEnemies.Num(); index++)
+    {
+        if (SpawnedEnemies[index])
+        {
+            SpawnedEnemies[index]->BossWait = false;
+            SpawnedEnemies[index]->RollBackSpeed();
+        }
+    }
+    //Enemy->SetActorHiddenInGame(false);
 }
 
 // Spawn 위치 반환
