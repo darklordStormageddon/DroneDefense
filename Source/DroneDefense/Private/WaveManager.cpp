@@ -185,7 +185,14 @@ void AWaveManager::BossSpawner()
                 SpawnedEnemies[index]->SpawnWait();
         }
 
-        // 플레이어 컨트롤러 호출 매소드
+        AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+        if (!_playerController)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("PlayerController is null"));
+            return;
+        }
+
+        _playerController->OnBossAppeared();
     }
 }
 

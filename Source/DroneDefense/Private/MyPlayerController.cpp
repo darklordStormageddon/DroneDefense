@@ -122,3 +122,8 @@ void AMyPlayerController::StartNextWave()
         false
     );
 };
+
+void AMyPlayerController::OnBossIntroFinished()
+{
+    _waveManager->BossWaitEnd();
+}
