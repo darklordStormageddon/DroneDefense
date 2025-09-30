@@ -179,7 +179,7 @@ void AWaveManager::BossSpawner()
       
         //모든 스폰 된 몬스터들에게 spawnWait 함수를 호출해서 속도 0, hit timer = 0으로 설정
 
-        for (int index = 0; index < SpawnedEnemies.Num(); index++)
+        for (int index = 0; index < SpawnedEnemies.Num() - 1; index++)
         {
             if (SpawnedEnemies[index])
                 SpawnedEnemies[index]->SpawnWait();
@@ -192,7 +192,7 @@ void AWaveManager::BossSpawner()
 // 플레이어 컨트롤러가 호출 해야 할 매소드
 void AWaveManager::BossWaitEnd()
 {
-    for (int index = 0; index < SpawnedEnemies.Num(); index++)
+    for (int index = 0; index < SpawnedEnemies.Num() - 1; index++)
     {
         if (SpawnedEnemies[index])
         {
