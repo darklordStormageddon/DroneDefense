@@ -74,22 +74,16 @@ protected:
 
 	class UStaticMeshComponent* _targetOrbitalCenter = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center")
-	float _centerMoveSpeed = 100.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center")
-	float _centerRotateSpeed = 100.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center")
-	float _arriveRange = 10.0f;
-
-	float _sqrArriveRange;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Center", meta = (UIMin = "0.0", UIMax = "1.0"))
+	float _centerFollowSpeedRate = 0.5f;
 
 	TMap<int32, FOrbitalCenterData> _orbitalCenterDataMap = TMap<int32, FOrbitalCenterData>();
-
 #pragma endregion
 
 #pragma region Orbital
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone|Drone")
+	int _maxDroneCount = 12.0f;
+
 	int32 _currentDroneMode = 0;
 
 	UPROPERTY()

@@ -19,7 +19,6 @@ void ADroneContainer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	_sqrArriveRange = FMath::Pow(_arriveRange, 2);
 	_sqrStandardAttackRange = FMath::Pow(_standardAttackRange, 2);
 }
 
@@ -83,6 +82,12 @@ void ADroneContainer::OperateDroneContainer(TArray<FOrbitalCenterData> OrbitalCe
 
 void ADroneContainer::GenerateDrone()
 {
+	if (_droneOrbitalArray.Num() >= _maxDroneCount)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Drone generated full"));
+		return;
+	}
+
 	FVector _location = FVector::ZeroVector;
 	AddOrbitalPoint(_location);
 
@@ -161,16 +166,7 @@ void ADroneContainer::UpdateCenterPosition()
 	float _deltaTime = GetWorld()->GetDeltaSeconds();
 
 	// 위치
-	FVector _nextLocation = FVector::Zero();
-	FVector _toCenter = (_targetOrbitalCenter->GetComponentLocation() - GetActorLocation());
-	if (_toCenter.SquaredLength() <= _sqrArriveRange)
-	{
-		_nextLocation = _targetOrbitalCenter->GetComponentLocation();
-	}
-	else
-	{
-		_nextLocation = GetActorLocation() + _toCenter.GetSafeNormal() * _centerMoveSpeed * _deltaTime;
-	}
+	FVector _nextLocation = FMath::Lerp(GetActorLocation(), _targetOrbitalCenter->GetComponentLocation(), _centerFollowSpeedRate);
 	SetActorLocation(_nextLocation);
 
 	// 회전
@@ -183,16 +179,7 @@ void ADroneContainer::UpdateCenterPosition()
 		_nextRotator = _rotationMatrix.Rotator();
 	}
 
-	FRotator _currentRotation = GetActorRotation();
-	FRotator _rotationDelta = (_nextRotator - _currentRotation).GetNormalized();
-	float _maxRotationRate = _centerRotateSpeed * _deltaTime; // _centerRotateSpeed 적용
-	
-	// 각 축별로 회전 속도 제한 적용
-	_rotationDelta.Pitch = FMath::Clamp(_rotationDelta.Pitch, -_maxRotationRate, _maxRotationRate);
-	_rotationDelta.Yaw = FMath::Clamp(_rotationDelta.Yaw, -_maxRotationRate, _maxRotationRate);
-	_rotationDelta.Roll = FMath::Clamp(_rotationDelta.Roll, -_maxRotationRate, _maxRotationRate);
-	
-	FRotator _nextRotation = _currentRotation + _rotationDelta;
+	FRotator _nextRotation = FMath::Lerp(GetActorRotation(), _targetOrbitalCenter->GetComponentRotation(), _centerFollowSpeedRate);
 	SetActorRotation(_nextRotation);
 }
 

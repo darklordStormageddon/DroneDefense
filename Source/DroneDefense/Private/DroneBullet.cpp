@@ -32,7 +32,7 @@ void ADroneBullet::Tick(float DeltaTime)
 		_targetLocation = _target->GetActorLocation();
 	}
 
-	DrawDebugSphere(GetWorld(), _targetLocation, 30.0f, 13, FColor::Green, false, DeltaTime * 1.01f);
+	DrawDebugSphere(GetWorld(), _targetLocation, _arriveRange, 13, FColor::Green, false, DeltaTime * 1.01f);
 
 	MoveToTarget();
 }

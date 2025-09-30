@@ -45,12 +45,11 @@ void AMyPlayerController::OnWaveEnd(bool IsGameEnd)
     }
     else
     {
-        // TODO : 웨이브 UI 호출
         StartNextWave();
     }
 }
 
-void AMyPlayerController::StartPlay_Implementation()
+void AMyPlayerController::OnStartWave_Implementation()
 {
     _waveManager->WaveStart();
 }
@@ -62,11 +61,13 @@ void AMyPlayerController::GameOver()
 
 void AMyPlayerController::StartNextWave()
 {
+    // TODO : 웨이브 UI 호출
+
     GetWorld()->GetTimerManager().SetTimer(
         _startDelayTimerHandle,
         this,
-        &AMyPlayerController::StartPlay,
+        &AMyPlayerController::OnStartWave,
         _startDelay,
         false
     );
-}
+};

@@ -36,7 +36,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	UFUNCTION(BlueprintCallable, Category = "Drone Container")
 	void GenerateDroneContainer();
 
 	UFUNCTION(BlueprintCallable, Category = "Drone Container")
