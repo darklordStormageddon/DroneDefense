@@ -24,6 +24,7 @@ void AWaveManager::BeginPlay()
 
 void AWaveManager::InitWaveStartEnd(int start, int end)
 {
+    KillPoint = 0;
     StartWave = start;
     EndWave = end;
 
