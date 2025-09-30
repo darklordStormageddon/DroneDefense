@@ -52,7 +52,7 @@ void AEnemyBase::InitializeEnemy(AWaveManager* myown)
 
 void AEnemyBase::DestroySelf()
 {
-    if (IsPendingKill())
+    if (IsPendingKill() || !IsValid(this))
     {
         return; // 이미 파괴 중
     }
