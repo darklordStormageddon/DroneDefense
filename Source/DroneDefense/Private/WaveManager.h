@@ -17,7 +17,8 @@ private:
 
     int CurrentWave = StartWave;
 
-    
+    UPROPERTY(EditAnywhere, Category = "Debug Spawn Setting")
+    bool SpawnCheck = true;
 
     bool BossSpawnBool = false;
 
@@ -95,8 +96,6 @@ private:
 
     int WaveValue;
     int LowWaveValue;
-
-    bool SpawnCheck = true;
 public:
     void MonsterDeath();
 
@@ -124,4 +123,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
     TArray<AEnemyBase*> SpawnedEnemies;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Monster Check")
+    int KillPoint;
 };

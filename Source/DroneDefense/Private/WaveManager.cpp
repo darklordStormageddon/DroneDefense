@@ -40,23 +40,25 @@ void AWaveManager::WaveStart(int Wave)
 
     CurrentWave = Wave;
 
-    if (_playerController)
-        _playerController->ChangeWave(CurrentWave);
+    if (SpawnCheck)
+    {
+        // Monster Number Init
+        TotalMonster = 0;
+        SpawnedEnemies.Empty();
 
-    // Monster Number Init
-    TotalMonster = 0;
-    SpawnedEnemies.Empty();
+        // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
+        WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
+        LowWaveValue = WaveValue;
+        BringMonsterValue();
+        SpawnMonsterValueInWave();
 
-    // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
-    WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
-    LowWaveValue = WaveValue;
-    BringMonsterValue();
-    SpawnMonsterValueInWave();
+        _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
 
-    _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
+        SpawnMonster();
 
-    SpawnMonster();
-    
+        if (_playerController)
+            _playerController->ChangeWave(CurrentWave);
+    }
 }
 
 void AWaveManager::SpawnEnd() { SpawnCheck = false; }
@@ -70,6 +72,8 @@ void AWaveManager::MonsterDeath()
     AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
     _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
+
+    ++KillPoint;
 
     if (MonsterNumInWave <= 0)
     {
@@ -157,8 +161,6 @@ void AWaveManager::BossSpawner()
     FRotator SpawnRot = FRotator::ZeroRotator;
     FTimerHandle TimeHandle;
 
-
-
     int BossHave = BossClass.Num();
     
     //<< --- LevelSequence Spawn Pos  
@@ -181,7 +183,8 @@ void AWaveManager::BossSpawner()
             if(SpawnedEnemies[index])
                SpawnedEnemies[index]->SpawnWait();
         }
-
+        //스타트 매개변수 보스 타임,연출 
+        
         //Bossdelay후 모든 몬스터에 bool변수인 BossWait을 false로 만들어줌
         GetWorld()->GetTimerManager().SetTimer(
             TimeHandle,
@@ -279,9 +282,6 @@ void AWaveManager::SpawnMonsterValueInWave()
 {
     int NonSpawnCheck = 0;
 
-    if (CurrentWave % 5 == 0)
-        TotalMonster++;//Boss
-
     MonsterClassInWave.Empty();
 
     // 키(몬스터 클래스) 값들을 Keys라는 배열 형태로 가져 오기
@@ -355,6 +355,13 @@ void AWaveManager::SpawnMonsterValueInWave()
         //}
     }
     MonsterNumInWave = TotalMonster = MonsterClassInWave.Num();
+
+    if (CurrentWave % 5 == 0)
+    {
+        ++TotalMonster;//Boss
+        ++MonsterNumInWave;
+    }
+
     ShakeMonsterList(); // 몬스터 리스트 섞기
 }
 
