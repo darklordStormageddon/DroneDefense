@@ -24,11 +24,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Movement")
 	float _moveSpeed = 100.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Movement", meta = (UIMin = "5", UIMax = "20"))
-	float _minRotateSpeed = 1.0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Movement", meta = (UIMin = "1", UIMax = "10"))
+	float _minRotateSpeed = 5.0;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Movement", meta = (UIMin = "5", UIMax = "20"))
-	float _maxRotateSpeed = 5.0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drone Bullet|Movement", meta = (UIMin = "10", UIMax = "50"))
+	float _maxRotateSpeed = 10.0;
 
 	float _currentRotateSpeed = 0.0f;
 

@@ -46,8 +46,8 @@ public:
 
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
-	void StartPlay();
-	virtual void StartPlay_Implementation();
+	void OnStartWave();
+	virtual void OnStartWave_Implementation();
 
 	void StartNextWave();
 };

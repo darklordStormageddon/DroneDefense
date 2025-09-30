@@ -16,6 +16,7 @@ APlayerBase::APlayerBase()
 void APlayerBase::BeginPlay()
 {
 	Super::BeginPlay();
+	GenerateDroneContainer();
 }
 
 // Called every frame
@@ -42,6 +43,7 @@ void APlayerBase::GenerateDroneContainer()
 
 	// 드론 컨테이너 생성
 	_droneContainer = GetWorld()->SpawnActor<ADroneContainer>(DroneContainerClass);
+	_droneContainer->SetActorLocation(GetActorLocation());
 	
 	// 소켓 이름으로 컴포넌트를 찾아서 orbitalCenter에 할당
 	for (int32 i = 0; i < _orbitalCenterDataArray.Num(); i++)
