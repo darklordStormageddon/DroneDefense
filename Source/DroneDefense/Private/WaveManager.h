@@ -23,7 +23,6 @@ private:
     UPROPERTY(EditAnywhere, Category = "Boss Spawn Setting")
     int BossSpawnPercent;
 
-    void BossWaitEnd();
 
 protected:
     virtual void BeginPlay() override;
@@ -126,4 +125,6 @@ public:
 
     UPROPERTY(BlueprintReadOnly, Category = "Monster Check")
     int KillPoint;
+
+    void BossWaitEnd();
 };
