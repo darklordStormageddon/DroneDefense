@@ -116,9 +116,10 @@ void AWaveManager::SpawnMonster()
 
                     SpawnedEnemies.Add(Enemy);
 
-                    if ((SpawnedEnemies.Num() == TotalMonster) && (CurrentWave % 5 == 0))
+                    if ((SpawnedEnemies.Num() == TotalMonster - 1) && (CurrentWave % 5 == 0))
                         BossSpawner();
 
+                    
                     /*
                     UE_LOG(LogTemp, Warning, TEXT("SpawnMonsterAdd : %d"), SpawnMonsterAdd);
                     UE_LOG(LogTemp, Warning, TEXT("TotalMonster : %d"), TotalMonster);
