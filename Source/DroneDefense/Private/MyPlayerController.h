@@ -44,6 +44,9 @@ public:
 
 	void OnWaveEnd(bool IsGameEnd);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	void OnBossAppeared();
+
 	/**
 	 * 가장 가까운 적을 찾는 함수
 	 * @param World - 현재 월드 포인터
@@ -69,4 +72,7 @@ protected:
 	virtual void OnStartWave_Implementation();
 
 	void StartNextWave();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Controller|Wave Manager")
+	void OnBossIntroFinished();
 };
