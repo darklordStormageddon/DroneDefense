@@ -18,8 +18,9 @@ void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
     }
 
     // 블루프린트에서 오버라이드한 메서드를 통해 웨이브 값 가져오기
-    int _startWave = GetStartWave();
-    int _endWave = GetEndWave();
+    _startWave = GetStartWave();
+    _endWave = GetEndWave();
+    _currentWave = _startWave;
     
     // 블루프린트에서 구현하지 않은 경우 기본값 사용
     if (_startWave <= 0)
@@ -32,22 +33,20 @@ void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
         _endWave = 10;
     }
 
-    // 웨이브 매니저에 시작 웨이브와 종료 웨이브 값 전달
-    _waveManager->InitWaveStartEnd(_startWave, _endWave);
-
     // _startWave 웨이브 시작
     StartNextWave();
 }
 
-void AMyPlayerController::OnWaveEnd(bool IsGameEnd)
+void AMyPlayerController::OnWaveEnd()
 {
-    if (IsGameEnd)
+    if (_currentWave < _endWave)
     {
-        OnGameClear();
+        _currentWave++;
+        StartNextWave();
     }
     else
     {
-        StartNextWave();
+        OnGameClear();
     }
 }
 
@@ -102,7 +101,7 @@ AEnemyBase* AMyPlayerController::SearchTargetFromActor(AActor* SourceActor, floa
 
 void AMyPlayerController::OnStartWave_Implementation()
 {
-    _waveManager->WaveStart();
+    _waveManager->WaveStart(_currentWave);
 }
 
 void AMyPlayerController::GameOver()
@@ -112,7 +111,7 @@ void AMyPlayerController::GameOver()
 
 void AMyPlayerController::StartNextWave()
 {
-    // TODO : 웨이브 UI 호출
+    ChangeWave(_currentWave, _startDelay);
 
     GetWorld()->GetTimerManager().SetTimer(
         _startDelayTimerHandle,
