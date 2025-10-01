@@ -22,33 +22,21 @@ void AWaveManager::BeginPlay()
     _playerController->SetWaveManager(this);
 }
 
-void AWaveManager::InitWaveStartEnd(int start, int end)
-{
-    KillPoint = 0;
-    StartWave = start;
-    EndWave = end;
-
-    CurrentWave = StartWave;
-}
-
-void AWaveManager::WaveStart() { WaveStart(CurrentWave); }
-
 // 웨이브 시작, 끝 함수
 void AWaveManager::WaveStart(int Wave)
 {
     FTimerHandle TempHandle;
     AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-    CurrentWave = Wave;
-
     if (SpawnCheck)
     {
         // Monster Number Init
         TotalMonster = 0;
         SpawnedEnemies.Empty();
+        IsBossWave = Wave % 5 == 0;
 
         // 현재 웨이브 값 = 웨이브 1의 값 + (현재 웨이브가 몇번째 웨이브인지 - 1) * 증가값
-        WaveValue = StartWaveValue + (CurrentWave - 1) * MultipleWaveValue;
+        WaveValue = StartWaveValue + (Wave - 1) * MultipleWaveValue;
         LowWaveValue = WaveValue;
         BringMonsterValue();
         SpawnMonsterValueInWave();
@@ -56,9 +44,6 @@ void AWaveManager::WaveStart(int Wave)
         _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
 
         SpawnMonster();
-
-        if (_playerController)
-            _playerController->ChangeWave(CurrentWave);
     }
 }
 
@@ -74,12 +59,9 @@ void AWaveManager::MonsterDeath()
 
     _playerController->ChangeEnemyCount(MonsterNumInWave, TotalMonster);
 
-    ++KillPoint;
-
     if (MonsterNumInWave <= 0)
     {
-        CurrentWave++;
-        _playerController->OnWaveEnd(CurrentWave > EndWave);
+        _playerController->OnWaveEnd();
     }
 }
 
@@ -117,7 +99,7 @@ void AWaveManager::SpawnMonster()
                     SpawnedEnemies.Add(Enemy);
 
                     FTimerHandle BossTempHandle;
-                    if ((SpawnedEnemies.Num() == TotalMonster - 1) && (CurrentWave % 5 == 0))
+                    if ((SpawnedEnemies.Num() == TotalMonster - 1) && IsBossWave)
                     {
                         AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
                         float _bossWarningDelat = _playerController->GetBossWarningDelay();
@@ -173,10 +155,8 @@ void AWaveManager::SpawnMonster()
 
 void AWaveManager::BossSpawner()
 {
-    int BossHave = BossClass.Num();
-    
     //<< --- LevelSequence Spawn Pos  
-    if (CurrentWave / 5 < BossHave + 1)
+    if (BossClass.Num() != 0)
     {
         SpawnedEnemies.Add(Enemy);//보스를 스폰된 몬스터 배열에 추가
 
@@ -209,7 +189,9 @@ void AWaveManager::BossWaitEnd()
     FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
 
-    Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[CurrentWave / 5 - 1]
+    int SpawnedBoss = rand() % (BossClass.Num() - 1);
+
+    Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[SpawnedBoss]
         , SpawnLoc, SpawnRot);//보스 몬스터 스폰
 
     for (int index = 0; index < SpawnedEnemies.Num()-1; index++)
@@ -373,7 +355,7 @@ void AWaveManager::SpawnMonsterValueInWave()
     }
     MonsterNumInWave = TotalMonster = MonsterClassInWave.Num();
 
-    if (CurrentWave % 5 == 0)
+    if (IsBossWave)
     {
         ++TotalMonster;//Boss
         ++MonsterNumInWave;

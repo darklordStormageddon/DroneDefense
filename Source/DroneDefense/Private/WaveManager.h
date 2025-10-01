@@ -15,14 +15,13 @@ private:
 
     AEnemyBase* Enemy;
 
-    int CurrentWave = StartWave;
-
     UPROPERTY(EditAnywhere, Category = "Debug Spawn Setting")
     bool SpawnCheck = true;
 
     UPROPERTY(EditAnywhere, Category = "Boss Spawn Setting")
     int BossSpawnPercent;
 
+    bool IsBossWave = false;
 
 protected:
     virtual void BeginPlay() override;
@@ -70,9 +69,6 @@ protected:
 
     void SpawnMonsterValueInWave();
 
-    UFUNCTION(BlueprintCallable, Category = "Wave Control")
-    void WaveStart(int Wave);
-
     UPROPERTY(BlueprintReadOnly, Category = "Wave Control")
     int MonsterNumInWave;
 
@@ -96,22 +92,15 @@ private:
     int WaveValue;
     int LowWaveValue;
 public:
+    UFUNCTION(BlueprintCallable, Category = "Wave Control")
+    void WaveStart(int Wave);
+
     void MonsterDeath();
 
     int getCurrentWave;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
-    int StartWave = 1;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave Control")
-    int EndWave = 10;
-
     UPROPERTY(BlueprintReadOnly, Category = "Wave Control")
     int BossPercentUI = BossSpawnPercent;
-
-    void WaveStart();
-
-    void InitWaveStartEnd(int start, int end);
 
     void SpawnEnd();
 
@@ -122,9 +111,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Control")
     TArray<AEnemyBase*> SpawnedEnemies;
-
-    UPROPERTY(BlueprintReadOnly, Category = "Monster Check")
-    int KillPoint;
 
     void BossWaitEnd();
 };

@@ -15,10 +15,13 @@ class AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-private :
-	UFUNCTION(BlueprintCallable, Category = "Game End")
-	void GameOver();
 protected:
+	int _startWave = 0;
+
+	int _endWave = 0;
+
+	int _currentWave = 0;
+
 	AWaveManager* _waveManager = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Controller|Wave Manager")
@@ -36,13 +39,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	int GetEndWave();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
-	void ChangeWave(int NextWave);
+	void OnWaveEnd();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	void ChangeEnemyCount(int LeftEnemyCount, int TotalEnemyCount);
-
-	void OnWaveEnd(bool IsGameEnd);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	float GetBossWarningDelay();
@@ -74,12 +74,18 @@ public:
 	static AEnemyBase* SearchTargetFromActor(AActor* SourceActor, float SearchDistance);
 
 protected:
+	void StartNextWave();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	void ChangeWave(int NextWave, float StartDelay);
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
 	void OnStartWave();
 	virtual void OnStartWave_Implementation();
 
-	void StartNextWave();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Game Result")
 	void OnGameClear();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Controller|Game Result")
+	void GameOver();
 };
