@@ -189,7 +189,7 @@ void AWaveManager::BossWaitEnd()
     FVector SpawnLoc = SpawnPosition();
     FRotator SpawnRot = FRotator::ZeroRotator;
 
-    int SpawnedBoss = rand() % (BossClass.Num() - 1);
+    int SpawnedBoss = rand() % (BossClass.Num());
 
     Enemy = GetWorld()->SpawnActor<AEnemyBase>(BossClass[SpawnedBoss]
         , SpawnLoc, SpawnRot);//보스 몬스터 스폰

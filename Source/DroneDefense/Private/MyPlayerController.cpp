@@ -34,7 +34,14 @@ void AMyPlayerController::SetWaveManager(AWaveManager* WaveManager)
     }
 
     // _startWave 웨이브 시작
-    StartNextWave();
+    FTimerHandle _initDelayTimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        _initDelayTimerHandle,
+        this,
+        &AMyPlayerController::StartNextWave,
+        0.1f,
+        false
+    );
 }
 
 void AMyPlayerController::OnWaveEnd()
