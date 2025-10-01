@@ -43,7 +43,7 @@ void AMyPlayerController::OnWaveEnd(bool IsGameEnd)
 {
     if (IsGameEnd)
     {
-        // TODO : Result UI 호출
+        OnGameClear();
     }
     else
     {
@@ -123,7 +123,7 @@ void AMyPlayerController::StartNextWave()
     );
 };
 
-void AMyPlayerController::OnBossIntroFinished()
+void AMyPlayerController::OnBossIntroFinished_Implementation()
 {
     _waveManager->BossWaitEnd();
 }

@@ -50,6 +50,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	void OnBossAppeared();
 
+	UFUNCTION(Blueprintcallable, BlueprintNativeEvent, Category = "Player Controller|Wave Manager")
+	void OnBossIntroFinished();
+	virtual void OnBossIntroFinished_Implementation();
+
 	/**
 	 * 가장 가까운 적을 찾는 함수
 	 * @param World - 현재 월드 포인터
@@ -76,6 +80,6 @@ protected:
 
 	void StartNextWave();
 
-	UFUNCTION(BlueprintCallable, Category = "Player Controller|Wave Manager")
-	void OnBossIntroFinished();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	void OnGameClear();
 };
