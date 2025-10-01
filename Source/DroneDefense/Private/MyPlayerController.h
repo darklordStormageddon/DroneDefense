@@ -45,6 +45,9 @@ public:
 	void OnWaveEnd(bool IsGameEnd);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
+	float GetBossWarningDelay();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player Controller|Wave Manager")
 	void OnBossAppeared();
 
 	/**

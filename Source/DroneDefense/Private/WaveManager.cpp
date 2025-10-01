@@ -116,8 +116,22 @@ void AWaveManager::SpawnMonster()
 
                     SpawnedEnemies.Add(Enemy);
 
+                    FTimerHandle BossTempHandle;
                     if ((SpawnedEnemies.Num() == TotalMonster - 1) && (CurrentWave % 5 == 0))
-                        BossSpawner();
+                    {
+                        AMyPlayerController* _playerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+                        float _bossWarningDelat = _playerController->GetBossWarningDelay();
+
+                        GetWorld()->GetTimerManager().SetTimer(
+                            BossTempHandle,
+                            FTimerDelegate::CreateLambda([this]()
+                                {
+                                    BossSpawner();
+                                }),
+                            _bossWarningDelat,
+                            false
+                        );
+                    }
 
                     
                     /*
