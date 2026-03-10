@@ -76,3 +76,9 @@ DerivedDataCache/*
 
 # imports내부 파일 무시 
 Content/Imports/
+Content/ParagonMinions/
+Content/ParagonRampage/
+Content/ThirdPerson/
+Content/StarterContents/
+Content/ParagonWraith
+Content/Movies
